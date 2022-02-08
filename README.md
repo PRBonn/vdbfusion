@@ -173,7 +173,7 @@ The [LICENSE](./LICENSE.txt) can be found at the root of this repository. This l
 
 ## Credits
 
-I would like to thanks the [Open3D](https://github.com/isl-org/Open3D) and [OpenVDB](https://github.com/AcademySoftwareFoundation/openvdb) authors and contributors for making their implementations open source which inspired, helped and guided the implementation of the VDBFusion library.
+I would like to thank the [Open3D](https://github.com/isl-org/Open3D) and [OpenVDB](https://github.com/AcademySoftwareFoundation/openvdb) authors and contributors for making their implementations open source which inspired, helped and guided the implementation of the VDBFusion library.
 
 ## Citation
 
