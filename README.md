@@ -7,7 +7,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/PRBonn/vdbfusion/pulls)
 [![Paper](https://img.shields.io/badge/paper-get-<COLOR>.svg?style=flat-square)](https://www.ipb.uni-bonn.de/wp-content/papercite-data/pdf/vizzo2022sensors.pdf)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://lbesson.mit-license.org/)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg?style=flat-square)](https://colab.research.google.com/github/PRBonn/vdbfusion/examples/notebooks/kitti_odometry.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg?style=flat-square)](https://colab.research.google.com/github/PRBonn/vdbfusion/blob/main/examples/notebooks/kitti_odometry.ipynb)
 
 ![example](docs/vdbfusion.gif)
 
