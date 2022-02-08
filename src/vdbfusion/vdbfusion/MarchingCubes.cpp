@@ -1,9 +1,10 @@
+#include "MarchingCubes.h"
+
 #include <Eigen/Core>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#include "MarchingCubesConst.h"
 #include "VDBVolume.h"
 
 namespace openvdb {
