@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+preferred-citation:
+  title: "VDBFusion: Flexible and Efficient TSDF Integration of Range Sensor Data"
+  doi: "10.3390/s22031296"
+  year: "2022"
+  type: article
+  journal: "Sensors"
+  url: https://www.mdpi.com/1424-8220/22/3/1296
+  authors:
+    - family-names: Vizzo
+      given-names: Ignacio
+    - family-names: Guadagnino
+      given-names: Tiziano
+    - family-names: Behley
+      given-names: Jens
+    - family-names: Stachniss
+      given-names: Cyrill

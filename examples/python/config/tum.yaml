@@ -1,0 +1,9 @@
+# VDBFUSION
+voxel_size: 0.01
+sdf_trunc: 0.07
+space_carving: False
+out_dir: "results/"
+
+# Reconstruction
+fill_holes: True
+min_weight: 5.0

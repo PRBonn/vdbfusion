@@ -1,0 +1,11 @@
+# VDBFUSION
+voxel_size: 0.02
+sdf_trunc: 0.06
+space_carving: False
+min_range: 0.1
+max_range: 5.0
+out_dir: "results/"
+
+# Reconstruction
+fill_holes: True
+min_weight: 1000.0

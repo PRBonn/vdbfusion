@@ -1,0 +1,12 @@
+version: "3.4"
+services:
+  builder:
+    image: gitlab.ipb.uni-bonn.de:4567/ipb-team/ipb-tools/vdbfusion:latest
+    build:
+      context: .
+      dockerfile: docker/builder/Dockerfile
+  pip_builder:
+    image: gitlab.ipb.uni-bonn.de:4567/ipb-team/ipb-tools/vdbfusion/pip_builder:latest
+    build:
+      context: .
+      dockerfile: docker/pip/Dockerfile

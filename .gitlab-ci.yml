@@ -1,0 +1,175 @@
+image: gitlab.ipb.uni-bonn.de:4567/ipb-team/ipb-tools/vdbfusion
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  GIT_SUBMODULE_STRATEGY: normal
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+cache:
+  paths:
+    - .cache/pip
+    - ccache/
+
+stages:
+  - format
+  - build
+  - test
+  - deploy
+
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
+
+format:
+  stage: format
+  script:
+    - black --check .
+    # - clang-format ?
+
+#----- ubuntu C++ jobs ------------------------------------------------------------------------------
+ubuntu:cpp:build:
+  stage: build
+  script:
+    - mkdir build && cd build && cmake ..
+    - make -j$(nproc --all) all
+  artifacts:
+    paths:
+      - build/
+
+ubuntu:cpp:install:
+  stage: build
+  needs: ["ubuntu:cpp:build"]
+  script:
+    - cd build
+    - make install
+    - make uninstall
+
+ubuntu:cpp:example:
+  stage: build
+  needs: ["ubuntu:cpp:install"]
+  script:
+  script:
+    - mkdir build && cd build && cmake -DBUILD_CXX_EXAMPLE=ON .. && make install && cd ..
+    - cd examples/cpp/ && mkdir build && cd build && cmake ..
+    - make -j$(nproc --all) all
+
+#----- ubuntu python jobs ---------------------------------------------------------------------------
+ubuntu:py:wheel:
+  stage: build
+  script:
+    - python3 setup.py bdist_wheel
+  artifacts:
+    paths:
+      - dist/*.whl
+
+ubuntu:py:test:
+  stage: test
+  needs: ["ubuntu:py:wheel"]
+  script:
+    - pip3 -v install -r dev-requirements.txt
+    - pip3 -v install dist/vdbfusion*.whl
+    - pytest .
+
+# This job is used regullary to test if we can build vdbfusion from scratch on ubuntu machines.
+ubuntu:py:standalone:wheel:
+  stage: build
+  needs: ["ubuntu:py:wheel"]
+  image: gitlab.ipb.uni-bonn.de:4567/ipb-team/ipb-tools/vdbfusion/pip_builder:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - CMAKE_ARGS=-DUSE_SYSTEM_OPENVDB=OFF VERBOSE=1 python3 setup.py bdist_wheel
+  artifacts:
+    paths:
+      - dist/*.whl
+
+ubuntu:py:standalone:test:
+  stage: build
+  needs: ["ubuntu:py:standalone:wheel"]
+  image: gitlab.ipb.uni-bonn.de:4567/ipb-team/ipb-tools/vdbfusion/pip_builder:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - pip3 -v install -r dev-requirements.txt
+    - pip3 -v install dist/vdbfusion*.whl
+    - pytest .
+
+#----- manylinux jobs ------------------------------------------------------------------------------
+manylinux:wheels:
+  stage: build
+  image: docker:19.03.12
+  needs: ["ubuntu:py:wheel"]
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  variables:
+    DOCKER_IMAGE: "quay.io/pypa/manylinux2014_x86_64"
+    PLAT: "manylinux2014_x86_64"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - mkdir -p ccache
+    - docker pull ${DOCKER_IMAGE}
+  script:
+    - |
+      docker run --rm \
+      -e PLAT=${PLAT} \
+      -e CCACHE_BASEDIR=$(pwd) \
+      -e CCACHE_DIR=$(pwd)/ccache/ \
+      -v $(pwd):/io \
+      ${DOCKER_IMAGE} \
+      /io/ci/build-wheels.sh
+    - ls wheelhouse/
+  artifacts:
+    paths:
+      - wheelhouse/
+
+manylinux:test:
+  stage: test
+  needs: ["manylinux:wheels"]
+  image: docker:19.03.12
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  variables:
+    DOCKER_IMAGE: "quay.io/pypa/manylinux2014_x86_64"
+    PLAT: "manylinux2014_x86_64"
+  services:
+    - docker:19.03.12-dind
+  script:
+    - docker pull ${DOCKER_IMAGE}
+    - docker run --rm -e PLAT=${PLAT} -v $(pwd):/io ${DOCKER_IMAGE} /io/ci/test-wheels.sh
+  artifacts:
+    paths:
+      - wheelhouse/
+
+#----- deployment stage ----------------------------------------------------------------------------
+testpypi:
+  stage: deploy
+  needs: ["manylinux:test"]
+  rules:
+    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  variables:
+    TWINE_PASSWORD: "${TESTPYPI_ACCESS_TOKEN}"
+    TWINE_USERNAME: "__token__"
+  script:
+    - twine upload --skip-existing --repository testpypi wheelhouse/*.whl
+  artifacts:
+    paths:
+      - wheelhouse/
+
+pypi:
+  stage: deploy
+  needs: ["testpypi"]
+  rules:
+    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  variables:
+    TWINE_PASSWORD: "${PYPI_ACCESS_TOKEN}"
+    TWINE_USERNAME: "__token__"
+  script:
+    - twine upload --skip-existing --repository pypi wheelhouse/*.whl

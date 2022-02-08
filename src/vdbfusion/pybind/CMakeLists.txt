@@ -1,0 +1,8 @@
+pybind11_add_module(vdbfusion_pybind vdbfusion_pybind.cpp)
+target_compile_options(vdbfusion_pybind PRIVATE -Werror -Wall -Wextra)
+target_link_libraries(vdbfusion_pybind PRIVATE VDBFusion::vdbfusion)
+if(PYOPENVDB_SUPPORT)
+  find_package(Boost COMPONENTS python REQUIRED)
+  target_compile_definitions(vdbfusion_pybind PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:PYOPENVDB_SUPPORT>")
+  target_link_libraries(vdbfusion_pybind PRIVATE Boost::python)
+endif()

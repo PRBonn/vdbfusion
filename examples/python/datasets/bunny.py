@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+import glob
+import os
+
+import numpy as np
+import open3d as o3d
+
+
+class BunnyDataset:
+    """The bun.conf does not specify how to work with the trasnformation, after hours of tyring to
+    debug how to use it, I couldn't find how to use the 1996 dataset.
+
+        So I've created my own. Contact me if you feel curious on how I've obtianed it.
+
+    ./mesh_to_dataset.py bunny.ply --scan-count 10
+    """
+
+    def __init__(self, bunny_root, apply_pose: bool = True):
+        # Cache
+        self.use_cache = True
+        self.apply_pose = apply_pose
+
+        self.data_dir = os.path.join(bunny_root, "generated")
+        self.scan_dir = os.path.join(self.data_dir, "data/")
+        self.poses = self.load_bunny_poses()
+        self.scans = self.load_bunny_clouds()
+        assert len(self.scans) == len(self.poses)
+
+    def load_bunny_poses(self):
+        filename = os.path.join(self.data_dir, "poses.txt")
+        poses = np.loadtxt(filename).reshape(-1, 4, 4)
+        return poses
+
+    def load_bunny_clouds(self):
+        scans = []
+        scan_files = sorted(glob.glob(self.scan_dir + "*.ply"))
+        for scan_file in scan_files:
+            scan = o3d.io.read_point_cloud(scan_file)
+            scans.append(np.asarray(scan.points))
+        return scans
+
+    def __getitem__(self, idx):
+        return self.scans[idx], self.poses[idx]
+
+    def __len__(self):
+        return len(self.scans)
