@@ -11,8 +11,8 @@
 
 ![example](docs/vdbfusion.gif)
 
-This is a small utility library that implement the VDBFusion algorithm, similar to TSDF-based
-reconstruction pipelines but using a different data-structure(VDB).
+This is a small utility library that implements the VDBFusion algorithm, similar to TSDF-based
+reconstruction pipelines but using a different data-structure (VDB).
 
 ## Installation
 
@@ -26,7 +26,7 @@ If you plan to use our C++ API then you should build this project from source. M
 
 ## Usage
 
-The code shown belown is not intended to be copy pasted but rather be a spiritual guide for developers. If you really want to give this library a try you should consider checking the standalone [Python](examples/python), [Notebooks](examples/notebooks), and [C++](examples/cpp) examples.
+The code shown below is not intended to be copy pasted but rather be a spiritual guide for developers. If you really want to give this library a try you should consider checking the standalone [Python](examples/python), [Notebooks](examples/notebooks), and [C++](examples/cpp) examples.
 
 ### Data loading
 
@@ -169,7 +169,7 @@ o3d::visualization::DrawGeometries({&mesh})
 
 ## LICENSE
 
-The [LICENSE](./LICENSE.txt) can be found at the root of this repository. This license only applies to `VDBFusion` code but not to its [3rdparty dependencies](3rdparty/). Please make sure to check the licenses in there before using any form of this code.
+The [LICENSE](./LICENSE.txt) can be found at the root of this repository. It only applies to the code of `VDBFusion` but not to its [3rdparty dependencies](3rdparty/). Please make sure to check the licenses in there before using any form of this code.
 
 ## Credits
 
