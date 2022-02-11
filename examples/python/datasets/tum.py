@@ -140,8 +140,8 @@ class TUMDataset:
         rgb_id, depth_id = self.matches[idx]
 
         pose_timestamp = self.find_closest_ts(depth_id)
-        T = self.conver_to_homo(self.gt_list[pose_timestamp])
-        T = np.linalg.inv(T)
+        pose = self.conver_to_homo(self.gt_list[pose_timestamp])
+        pose_inv = np.linalg.inv(pose)
 
         bgr = cv.imread(os.path.join(self.data_source, "rgb", "{:.6f}".format(rgb_id) + ".png"))
         rgb = cv.cvtColor(bgr, cv.COLOR_BGR2RGB)
@@ -163,15 +163,15 @@ class TUMDataset:
         )
 
         pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-            rgbd, intrinsic, T, project_valid_depth_only=True
+            rgbd, intrinsic, pose_inv, project_valid_depth_only=True
         )
 
         xyz = np.array(pcd.points)
         colors = np.array(pcd.colors)
 
         if self.get_color:
-            return xyz, colors, np.array(T)
-        return xyz, np.array(T)
+            return xyz, colors, np.array(pose)
+        return xyz, np.array(pose)
 
     def __len__(self):
         return len(self.matches)
