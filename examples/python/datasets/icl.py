@@ -83,7 +83,8 @@ class ICLDataset:
 
         rgb_id = self.rgb_list[idx][0]
         depth_id = self.depth_list[idx][0]
-        T = np.linalg.inv(self.gt_poses[idx])
+        pose = self.gt_poses[idx]
+        pose_inv = np.linalg.inv(pose)
 
         bgr = cv.imread(os.path.join(self.data_source, rgb_id))
         rgb = cv.cvtColor(bgr, cv.COLOR_BGR2RGB)
@@ -101,15 +102,15 @@ class ICLDataset:
         )
 
         pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-            rgbd, intrinsic, T, project_valid_depth_only=True
+            rgbd, intrinsic, pose_inv, project_valid_depth_only=True
         )
 
         xyz = np.array(pcd.points)
         colors = np.array(pcd.colors)
 
         if self.get_color:
-            return xyz, colors, np.array(T)
-        return xyz, np.array(T)
+            return xyz, colors, np.array(pose)
+        return xyz, np.array(pose)
 
     def __len__(self):
         return len(self.rgb_list)

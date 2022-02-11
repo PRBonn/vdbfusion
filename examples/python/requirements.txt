@@ -1,6 +1,6 @@
 open3d
 natsort
-tqdm=
+tqdm
 pandas
 diskcache
 vdbfusion

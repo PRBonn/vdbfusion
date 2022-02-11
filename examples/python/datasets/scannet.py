@@ -30,7 +30,7 @@ class ScanNet:
     def __getitem__(self, idx):
 
         pose = np.loadtxt(os.path.join(self.data_source, "pose", self.pose_list[idx]))
-        pose = np.linalg.inv(pose)
+        pose_inv = np.linalg.inv(pose)
 
         bgr = cv.imread(os.path.join(self.data_source, "color", self.rgb_list[idx]))
         rgb = cv.cvtColor(bgr, cv.COLOR_BGR2RGB)
@@ -59,7 +59,7 @@ class ScanNet:
         )
 
         pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-            rgbd, intrinsic, pose, project_valid_depth_only=True
+            rgbd, intrinsic, pose_inv, project_valid_depth_only=True
         )
 
         xyz = np.array(pcd.points)
