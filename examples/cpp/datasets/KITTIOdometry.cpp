@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "yaml-cpp/yaml.h"
+
 namespace fs = std::filesystem;
 
 namespace {
@@ -54,9 +56,9 @@ std::vector<Eigen::Vector3d> ReadKITTIVelodyne(const std::string& path) {
     return points;
 }
 
-void PreProcessCloud(std::vector<Eigen::Vector3d>& points) {
-    const double min_range = 2.0;
-    const double max_range = 70.0;
+void PreProcessCloud(std::vector<Eigen::Vector3d>& points, YAML::Node cfg) {
+    const double min_range = cfg["min_range"].as<float>();
+    const double max_range = cfg["max_range"].as<float>();
     points.erase(
         std::remove_if(points.begin(), points.end(), [&](auto p) { return p.norm() > max_range; }),
         points.end());
@@ -73,15 +75,22 @@ void TransformPoints(std::vector<Eigen::Vector3d>& points, const Eigen::Matrix4d
     }
 }
 
-std::vector<Eigen::Matrix4d> GetGTPoses(const fs::path& poses_file, const fs::path& calib_file) {
+std::tuple<std::vector<float>, std::vector<Eigen::Matrix4d>> GetGTPoses(
+    const fs::path& poses_file, const fs::path& calib_file, const fs::path& timestamps_file) {
+    std::vector<float> timestamps;
     std::vector<Eigen::Matrix4d> poses;
     Eigen::Matrix4d T_cam_velo = Eigen::Matrix4d::Zero();
     Eigen::Matrix4d T_velo_cam = Eigen::Matrix4d::Zero();
 
     // auxiliary variables to read the txt files
     std::string ss;
+    float timestamp;
     float P_00, P_01, P_02, P_03, P_10, P_11, P_12, P_13, P_20, P_21, P_22, P_23;
 
+    std::ifstream timestamp_in(timestamps_file, std::ios_base::in);
+    while (timestamp_in >> timestamp) {
+        timestamps.emplace_back(timestamp);
+    }
     std::ifstream calib_in(calib_file, std::ios_base::in);
     // clang-format off
     while (calib_in >> ss >>
@@ -112,7 +121,7 @@ std::vector<Eigen::Matrix4d> GetGTPoses(const fs::path& poses_file, const fs::pa
         poses.emplace_back(T_velo_cam * P * T_cam_velo);
     }
     // clang-format on
-    return poses;
+    return std::make_tuple(timestamps, poses);
 }
 
 }  // namespace
@@ -120,25 +129,30 @@ namespace datasets {
 
 KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
                            const std::string& sequence,
-                           int n_scans) {
+                           YAML::Node& cfg,
+                           int n_scans)
+    : cfg_(cfg),
+      preprocess_(cfg["preprocess"].as<bool>()),
+      apply_pose_(cfg["apply_pose"].as<bool>()) {
     // TODO: to be completed
     auto kitti_root_dir_ = fs::absolute(fs::path(kitti_root_dir));
     auto kitti_sequence_dir = fs::absolute(fs::path(kitti_root_dir) / "sequences" / sequence);
 
     // Read data, cache it inside the class.
-    poses_ = GetGTPoses(kitti_root_dir_ / "poses" / std::string(sequence + ".txt"),
-                        kitti_sequence_dir / "calib.txt");
+    std::tie(time_, poses_) =
+        GetGTPoses(kitti_root_dir_ / "poses" / std::string(sequence + ".txt"),
+                   kitti_sequence_dir / "calib.txt", kitti_sequence_dir / "times.txt");
     scan_files_ = GetVelodyneFiles(fs::absolute(kitti_sequence_dir / "velodyne/"), n_scans);
 }
 
-std::tuple<std::vector<Eigen::Vector3d>, Eigen::Vector3d> KITTIDataset::operator[](int idx) const {
-    const bool preprocess = true;
-    const bool apply_pose = true;
+std::tuple<float, std::vector<Eigen::Vector3d>, Eigen::Vector3d> KITTIDataset::operator[](
+    int idx) const {
     std::vector<Eigen::Vector3d> points = ReadKITTIVelodyne(scan_files_[idx]);
-    if (preprocess) PreProcessCloud(points);
-    if (apply_pose) TransformPoints(points, poses_[idx]);
+    if (preprocess_) PreProcessCloud(points, cfg_);
+    if (apply_pose_) TransformPoints(points, poses_[idx]);
     const Eigen::Vector3d origin = poses_[idx].block<3, 1>(0, 3);
-    return std::make_tuple(points, origin);
+    const float timestamp = time_[idx];
+    return std::make_tuple(timestamp, points, origin);
 }
 
 }  // namespace datasets
