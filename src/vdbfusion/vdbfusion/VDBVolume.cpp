@@ -68,6 +68,15 @@ void VDBVolume::UpdateTSDF(const float& sdf,
     }
 }
 
+void VDBVolume::Integrate(openvdb::FloatGrid::Ptr grid,
+                          const std::function<float(float)>& weighting_function) {
+    for (auto iter = grid->cbeginValueOn(); iter.test(); ++iter) {
+        const auto& sdf = iter.getValue();
+        const auto& voxel = iter.getCoord();
+        this->UpdateTSDF(sdf, voxel, weighting_function);
+    }
+}
+
 void VDBVolume::Integrate(const std::vector<Eigen::Vector3d>& points,
                           const Eigen::Vector3d& origin,
                           const std::function<float(float)>& weighting_function) {
@@ -115,5 +124,25 @@ void VDBVolume::Integrate(const std::vector<Eigen::Vector3d>& points,
             }
         } while (dda.step());
     });
+}
+
+openvdb::FloatGrid::Ptr VDBVolume::Prune(float min_weight) const {
+    const auto weights = weights_->tree();
+    const auto tsdf = tsdf_->tree();
+    const auto background = sdf_trunc_;
+    openvdb::FloatGrid::Ptr clean_tsdf = openvdb::FloatGrid::create(sdf_trunc_);
+    clean_tsdf->setName("D(x): Pruned signed distance grid");
+    clean_tsdf->setTransform(openvdb::math::Transform::createLinearTransform(voxel_size_));
+    clean_tsdf->setGridClass(openvdb::GRID_LEVEL_SET);
+    clean_tsdf->tree().combine2Extended(tsdf, weights, [=](openvdb::CombineArgs<float>& args) {
+        if (args.aIsActive() && args.b() > min_weight) {
+            args.setResult(args.a());
+            args.setResultIsActive(true);
+        } else {
+            args.setResult(background);
+            args.setResultIsActive(false);
+        }
+    });
+    return clean_tsdf;
 }
 }  // namespace vdbfusion

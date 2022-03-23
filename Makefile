@@ -1,9 +1,12 @@
-.PHONY: docker
+.PHONY: install docker
 install:
 	pip3 -v install . && cp build/*/compile_commands.json build/
 
 uninstall:
 	pip3 -v uninstall vdbfusion
+
+dev:
+	pip3 -v install -e . && cp build/*/compile_commands.json build/
 
 test:
 	pytest .

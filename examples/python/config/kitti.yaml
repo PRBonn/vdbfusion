@@ -5,11 +5,11 @@ space_carving: False
 out_dir: "results/"
 
 # Reconstruction
-fill_holes: True
+fill_holes: False
 min_weight: 5.0
 
 # Kitti
 apply_pose: True
-min_range: 2.0
-max_range: 70.0
+min_range: 2.5
+max_range: 120.0
 correct_scan: True

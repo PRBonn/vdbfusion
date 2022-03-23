@@ -1,0 +1,2 @@
+vdbfusion:
+	@make -C ../../
