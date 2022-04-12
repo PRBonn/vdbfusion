@@ -11,7 +11,7 @@ You need a [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/ins
 Create a new environment and activate it.
 
 ```sh
-conda create -n vdbfusion python=3.10
+conda create -n vdbfusion python=3.9
 conda activate vdbfusion
 ```
 
@@ -36,12 +36,12 @@ git clone --depth 1 https://github.com/nachovizzo/openvdb.git -b nacho/vdbfusion
     && cmake \
     -DOPENVDB_BUILD_PYTHON_MODULE=ON \
     -DUSE_NUMPY=ON \
-    -DPYOPENVDB_INSTALL_DIRECTORY="/usr/local/lib/python3.10/dist-packages" \
+    -DPYOPENVDB_INSTALL_DIRECTORY="/usr/local/lib/python3.9/dist-packages" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DUSE_ZLIB=OFF \
-    && cd .. \
+    ..\
     && make -j$(nproc) all install \
-    && cd .. \
+    && cd ../.. \
     && rm -rf /openvdb
 ```
 
