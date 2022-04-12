@@ -2,6 +2,64 @@
 
 Most of the people can do `pip install vdbfusion` and get the Python bindings for this project. If you wish to build the project from source because you are doing modifications you have few options available.
 
+## Build from source in a Conda environment
+
+Tested on MacOS and Linux.
+
+You need a [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) variant installed. The following instructions use [MambaForge](https://github.com/conda-forge/miniforge) (it is significantly faster).
+
+Create a new environment and activate it.
+
+```sh
+conda create -n vdbfusion python=3.10
+conda activate vdbfusion
+```
+
+Install dependencies.
+
+```sh
+mamba install cmake llvm ccache ninja pkg-config blosc boost eigen tbb tbb-devel pytest numpy black pybind11 twine 
+```
+
+Clone the repository and enter it.
+
+```sh
+git clone https://github.com/PRBonn/vdbfusion.git && cd vdbfusion
+```
+
+Build OpenVDB from source.
+
+```sh
+git clone --depth 1 https://github.com/nachovizzo/openvdb.git -b nacho/vdbfusion \
+    && cd openvdb \
+    && mkdir build && cd build \
+    && cmake \
+    -DOPENVDB_BUILD_PYTHON_MODULE=ON \
+    -DUSE_NUMPY=ON \
+    -DPYOPENVDB_INSTALL_DIRECTORY="/usr/local/lib/python3.10/dist-packages" \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DUSE_ZLIB=OFF \
+    && cd .. \
+    && make -j$(nproc) all install \
+    && cd .. \
+    && rm -rf /openvdb
+```
+
+From the root of the repository, build the C++ API and install it into user space.
+```sh
+mkdir -p build && cd build && cmake ..
+make install
+```
+
+Launching your IDE from the terminal in your active environment will allow it to pick up your environment variables.
+
+If cmake is unable to find TBB, set your TBB_ROOT to the root of your conda environment as a build flag in your IDE.
+
+```sh
+-DTBB_ROOT=/path/to/conda/envs/vdbfusion
+```
+
+
 ## Build from source in Linux
 
 I spent some extra time trying to make the build work on different Linux distributions like Ubuntu, Debian, CentOs, etc. The build (or superbuild) includes all the necessary tools to pull 3rdparty dependencies. If you are developing something on top of VDBFusion I would recommend to check [Using system installed 3rdparty libraries](#using-system-installed-3rdparty-libraries) instead. More information about building can be found on the [CI/CD configuration](./.gitlab-ci.yml)

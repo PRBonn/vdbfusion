@@ -218,3 +218,7 @@ dmypy.json
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/python,cmake,c++,vscode
+
+.idea/
+
+cmake-build-debug/
