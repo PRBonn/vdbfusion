@@ -18,52 +18,51 @@ using namespace utils;
 namespace fs = std::filesystem;
 
 namespace {
+    argparse::ArgumentParser ArgParse(int argc, char *argv[]) {
+        argparse::ArgumentParser argparser("KITTIPipeline");
+        argparser.add_argument("kitti_root_dir").help("The full path to the KITTI dataset");
+        argparser.add_argument("--sequence").help("KITTI Sequence");
+        argparser.add_argument("--voxel_size")
+                .help("Size in meters of each voxel")
+                .default_value(float(0.1))
+                .action([](const std::string &value) { return std::stof(value); });
+        argparser.add_argument("--sdf_trunc")
+                .help("Truncation SDF value")
+                .default_value(float(0.3))
+                .action([](const std::string &value) { return std::stof(value); });
+        argparser.add_argument("--n_scans")
+                .help("How many scans to map")
+                .default_value(int(-1))
+                .action([](const std::string &value) { return std::stoi(value); });
+        argparser.add_argument("--space_carving")
+                .help("Activate space_carving flag for mapping")
+                .default_value(false)
+                .implicit_value(true);
+        argparser.add_argument("--preprocess")
+                .help("Preprocess input point_cloud")
+                .default_value(false)
+                .implicit_value(true);
 
-argparse::ArgumentParser ArgParse(int argc, char* argv[]) {
-    argparse::ArgumentParser argparser("KITTIPipeline");
-    argparser.add_argument("kitti_root_dir").help("The full path to the KITTI dataset");
-    argparser.add_argument("--sequence").help("KITTI Sequence");
-    argparser.add_argument("--voxel_size")
-        .help("Size in meters of each voxel")
-        .default_value(float(0.1))
-        .action([](const std::string& value) { return std::stof(value); });
-    argparser.add_argument("--sdf_trunc")
-        .help("Truncation SDF value")
-        .default_value(float(0.3))
-        .action([](const std::string& value) { return std::stof(value); });
-    argparser.add_argument("--n_scans")
-        .help("How many scans to map")
-        .default_value(int(-1))
-        .action([](const std::string& value) { return std::stoi(value); });
-    argparser.add_argument("--space_carving")
-        .help("Activcate space_carving flag for mapping")
-        .default_value(false)
-        .implicit_value(true);
-    argparser.add_argument("--preprocess")
-        .help("Preprocebin input point_cloud")
-        .default_value(false)
-        .implicit_value(true);
+        try {
+            argparser.parse_args(argc, argv);
+        } catch (const std::runtime_error &err) {
+            std::cerr << "Invalid Arguments " << std::endl;
+            std::cerr << err.what() << std::endl;
+            std::cerr << argparser;
+            exit(0);
+        }
 
-    try {
-        argparser.parse_args(argc, argv);
-    } catch (const std::runtime_error& err) {
-        std::cerr << "Invalid Arguments " << std::endl;
-        std::cerr << err.what() << std::endl;
-        std::cerr << argparser;
-        exit(0);
+        auto kitti_root_dir = argparser.get<std::string>("kitti_root_dir");
+        if (!fs::exists(kitti_root_dir)) {
+            std::cerr << kitti_root_dir << " path doesn't exists" << std::endl;
+            exit(1);
+        }
+        return argparser;
     }
-
-    auto kitti_root_dir = argparser.get<std::string>("kitti_root_dir");
-    if (!fs::exists(kitti_root_dir)) {
-        std::cerr << kitti_root_dir << "path doesn't exists" << std::endl;
-        exit(1);
-    }
-    return argparser;
-}
 
 }  // namespace
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     auto argparser = ArgParse(argc, argv);
 
     // VDBVolume configuration
@@ -79,20 +78,25 @@ int main(int argc, char* argv[]) {
     auto sequence = argparser.get<std::string>("--sequence");
 
     // Initialize dataset
-
     const auto dataset = datasets::KITTIDataset(kitti_root_dir, sequence, n_scans);
 
     fmt::print("Integrating {} scans\n", dataset.size());
     vdbfusion::VDBVolume tsdf_volume(voxel_size, sdf_trunc, space_carving);
     timers::FPSTimer<10> timer;
-    for (const auto& [scan, origin] : iterable(dataset)) {
+    for (const auto &[scan, origin]: iterable(dataset)) {
         timer.tic();
-        tsdf_volume.Integrate(scan, origin, [](float /*unused*/) { return 1.0; });
+        tsdf_volume.IntegrateFast(scan, origin, [](float /*unused*/) { return 1.0; });
         timer.toc();
     }
 
     // Store the grid results to disks
-    std::string map_name = fmt::format("results/kitti_{seq}_{n_scans}_scans", "seq"_a = sequence,
+    auto results_dir = "./results";
+    if (!fs::exists(results_dir)) {
+        fs::create_directory(results_dir);
+    }
+    std::string map_name = fmt::format("{results_dir}/kitti_{seq}_{n_scans}_scans",
+                                       "results_dir"_a = results_dir,
+                                       "seq"_a = sequence,
                                        "n_scans"_a = n_scans);
     {
         timers::ScopeTimer timer("Writing VDB grid to disk");

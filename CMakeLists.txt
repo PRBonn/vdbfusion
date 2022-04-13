@@ -17,6 +17,8 @@ if(SILENCE_WARNINGS)
   add_compile_options(-w)
 endif()
 
+add_compile_options(-gdwarf-4)
+
 # ccache setup
 if(USE_CCACHE)
   find_program(CCACHE_PATH ccache)

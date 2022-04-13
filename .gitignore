@@ -222,3 +222,6 @@ dmypy.json
 ### clion ###
 .idea/
 cmake-build-debug/
+
+### macos ###
+.DS_Store
