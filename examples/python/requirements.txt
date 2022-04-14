@@ -2,7 +2,7 @@ open3d
 natsort
 tqdm
 pandas
-diskcache
+diskcache>=5.3.0
 vdbfusion
 numpy
 easydict
