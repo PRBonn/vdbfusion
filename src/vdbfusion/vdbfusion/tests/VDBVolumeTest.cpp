@@ -7,8 +7,6 @@
 class VDBVolumeFixture : public ::testing::Test {
 protected:
     void SetUp() override { openvdb::initialize(); }
-
-    void TearDown() override {}
 };
 
 TEST_F(VDBVolumeFixture, IntegrateFast) {
@@ -40,35 +38,25 @@ TEST_F(VDBVolumeFixture, IntegrateFast) {
 
     AccessorRW tsdf_acc_simple = AccessorRW(tsdf_volume_simple.tsdf_->tree());
     AccessorRW weight_acc_simple = AccessorRW(tsdf_volume_simple.weights_->tree());
-    std::vector<float> simple_tsdf_values;
-    std::vector<float> simple_tsdf_weights;
-    std::vector<openvdb::Coord> simple_tsdf_coords;
+    std::vector<float> tsdf_values_simple;
+    std::vector<openvdb::Coord> tsdf_coords_simple;
     for (auto it = tsdf_volume_simple.tsdf_->tree().cbeginValueOn(); it; ++it) {
-        simple_tsdf_coords.push_back(it.getCoord());
-        simple_tsdf_values.push_back(it.getValue());
-    }
-    for (auto it = tsdf_volume_simple.weights_->tree().cbeginValueOn(); it; ++it) {
-        simple_tsdf_weights.push_back(it.getValue());
+        tsdf_coords_simple.push_back(it.getCoord());
+        tsdf_values_simple.push_back(it.getValue());
     }
 
     AccessorRW tsdf_acc_fast = AccessorRW(tsdf_volume_fast.tsdf_->tree());
     AccessorRW weight_acc_fast = AccessorRW(tsdf_volume_fast.weights_->tree());
-    std::vector<float> fast_tsdf_values;
-    std::vector<float> fast_tsdf_weights;
-    std::vector<openvdb::Coord> fast_tsdf_coords;
+    std::vector<float> tsdf_values_fast;
+    std::vector<openvdb::Coord> tsdf_coords_fast;
     for (auto it = tsdf_volume_fast.tsdf_->tree().cbeginValueOn(); it; ++it) {
-        fast_tsdf_coords.push_back(it.getCoord());
-        fast_tsdf_values.push_back(it.getValue());
-    }
-    for (auto it = tsdf_volume_fast.weights_->tree().cbeginValueOn(); it; ++it) {
-        fast_tsdf_weights.push_back(it.getValue());
+        tsdf_coords_fast.push_back(it.getCoord());
+        tsdf_values_fast.push_back(it.getValue());
     }
 
-    // Check that the values are the same
-    ASSERT_EQ(simple_tsdf_values.size(), fast_tsdf_values.size());
-    for (size_t i = 0; i < simple_tsdf_values.size(); ++i) {
-        ASSERT_EQ(simple_tsdf_coords[i], simple_tsdf_coords[i]);
-        ASSERT_NEAR(simple_tsdf_values[i], fast_tsdf_values[i], 0.001);
-        ASSERT_NEAR(simple_tsdf_weights[i], fast_tsdf_weights[i], 2.0);
+    ASSERT_EQ(tsdf_values_simple.size(), tsdf_values_fast.size());
+    for (size_t i = 0; i < tsdf_values_simple.size(); ++i) {
+        ASSERT_EQ(tsdf_coords_simple[i], tsdf_coords_simple[i]);
+        ASSERT_NEAR(tsdf_values_simple[i], tsdf_values_fast[i], 0.001);
     }
 }

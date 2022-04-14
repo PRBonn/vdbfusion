@@ -141,6 +141,9 @@ void VDBVolume::IntegrateFast(const std::vector<Eigen::Vector3d>& points,
     auto tsdf_acc = tsdf_->getUnsafeAccessor();
     auto weights_acc = weights_->getUnsafeAccessor();
 
+    // Create an unordered set of voxels to track which voxels have been observed
+    std::unordered_set<openvdb::Coord> voxel_observed_set_;
+
     // Launch a for_each execution, use std::execution::par to parallelize this region
     std::for_each(points.cbegin(), points.cend(), [&](const auto& point) {
         const openvdb::Vec3R eye(point.x(), point.y(), point.z());
@@ -154,11 +157,25 @@ void VDBVolume::IntegrateFast(const std::vector<Eigen::Vector3d>& points,
         const float t0 = -sdf_trunc_;
         const float t1 = space_carving_ ? depth : sdf_trunc_;
 
+        // Ray collision counter
+        int consecutive_ray_collisions = 0;
+        int max_consecutive_ray_collisions = 2;
+
         // Create one DDA per ray(per thread), the ray must operate on voxel grid coordinates.
         const auto ray = openvdb::math::Ray<float>(eye, dir, t0, t1).worldToIndex(*tsdf_);
         openvdb::math::DDA<decltype(ray)> dda(ray);
         do {
             const auto voxel = dda.voxel();
+            // Check if the voxel has been observed before, if not, add it to the set else increment the counter
+            if (voxel_observed_set_.find(voxel) == voxel_observed_set_.end()) {
+                voxel_observed_set_.insert(voxel);
+            } else {
+                consecutive_ray_collisions++;
+            }
+            // If the voxel has been observed more than max_consecutive_ray_collisions stop integrating
+            if (consecutive_ray_collisions > max_consecutive_ray_collisions) {
+                break;
+            }
             const auto voxel_center = GetVoxelCenter(voxel, xform);
             const auto sdf = ComputeSDF(origin, point, voxel_center);
             if (sdf > -sdf_trunc_) {
