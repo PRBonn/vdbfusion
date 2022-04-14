@@ -20,15 +20,18 @@ TEST_F(VDBVolumeFixture, IntegrateFast) {
 
     // Generate points on a sphere
     std::vector<Eigen::Vector3d> points;
+    std::vector<openvdb::Vec3i> colors;
     for (int i = 0; i < 1000000; i++) {
         Eigen::Vector3d p;
-        p[0] = (float) rand() / RAND_MAX;
-        p[1] = (float) rand() / RAND_MAX;
-        p[2] = (float) rand() / RAND_MAX;
+        p[0] = (float)rand() / RAND_MAX;
+        p[1] = (float)rand() / RAND_MAX;
+        p[2] = (float)rand() / RAND_MAX;
         p = p.normalized() * 0.5;
         points.emplace_back(p);
+        openvdb::Vec3i c(0, 100, 255);
+        colors.emplace_back(c);
     }
 
     // Integrate the points
-    tsdf_volume.Integrate(points, origin, [](float /*unused*/) { return 1.0; });
+    tsdf_volume.Integrate(points, colors, origin, [](float /*unused*/) { return 1.0; });
 }
