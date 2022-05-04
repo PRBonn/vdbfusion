@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(VDBFusion VERSION 0.1.5 LANGUAGES CXX)
+project(VDBFusion VERSION 0.1.6 LANGUAGES CXX)
 
 add_library(vdbfusion STATIC)
 add_library(VDBFusion::vdbfusion ALIAS vdbfusion)

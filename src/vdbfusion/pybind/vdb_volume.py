@@ -1,4 +1,4 @@
-from typing import Any, Callable, Tuple
+from typing import Any, Optional, Tuple, Callable, overload
 
 import numpy as np
 
@@ -6,11 +6,6 @@ from . import vdbfusion_pybind
 
 
 class VDBVolume:
-    """Wrapper class around the low level C++ python bindings.
-
-    TODO: Complete class documentation and check for data types
-    """
-
     def __init__(
         self,
         voxel_size: float,
@@ -26,8 +21,8 @@ class VDBVolume:
         self.voxel_size = self._volume._voxel_size
         self.sdf_trunc = self._volume._sdf_trunc
         self.space_carving = self._volume._space_carving
-        # If PYOPENVDB_SUPPORT has been enabled then we can acccess those attributes
-        if hasattr(self._volume, "_tsdf") and hasattr(self._volume, "_weights"):
+        self.pyopenvdb_support_enabled = self._volume.PYOPENVDB_SUPPORT_ENABLED
+        if self.pyopenvdb_support_enabled:
             self.tsdf = self._volume._tsdf
             self.weights = self._volume._weights
 
@@ -39,49 +34,90 @@ class VDBVolume:
             f"space_carving = {self.space_carving}\n"
         )
 
+    @overload
     def integrate(
         self,
         points: np.ndarray,
-        extrinsic: np.ndarray,  # or origin
-        weighting_function: Callable[[float], float] = None,
+        extrinsic: np.ndarray,
+        weighting_function: Callable[[float], float],
     ) -> None:
-        """Explain here how to use the function.
+        ...
 
-        TODO: Add tag dispatching for the `origin` case
-        """
-        assert isinstance(points, np.ndarray), "points must by np.ndarray(n, 3)"
-        assert points.dtype == np.float64, "points dtype must be np.float64"
-        assert isinstance(extrinsic, np.ndarray), "origin/extrinsic must by np.ndarray"
-        assert extrinsic.dtype == np.float64, "origin/extrinsic dtype must be np.float64"
-        assert extrinsic.shape in [
-            (3,),
-            (3, 1),
-            (4, 4),
-        ], "origin/extrinsic must be a (3,) array or a (4,4) matrix"
-        # TODO: Fix this logic with singledispatchmethod
-        if weighting_function:
-            self._volume._integrate(
-                vdbfusion_pybind._VectorEigen3d(points), extrinsic, weighting_function
-            )
-        self._volume._integrate(vdbfusion_pybind._VectorEigen3d(points), extrinsic)
+    @overload
+    def integrate(self, points: np.ndarray, extrinsic: np.ndarray, weight: float) -> None:
+        ...
+
+    @overload
+    def integrate(self, points: np.ndarray, extrinsic: np.ndarray) -> None:
+        ...
+
+    @overload
+    def integrate(self, grid, weighting_function: Callable[[float], float]) -> None:
+        ...
+
+    @overload
+    def integrate(self, grid, weight: float) -> None:
+        ...
+
+    @overload
+    def integrate(self, grid) -> None:
+        ...
+
+    def integrate(
+        self,
+        points: Optional[np.ndarray] = None,
+        extrinsic: Optional[np.ndarray] = None,
+        grid: Optional[Any] = None,
+        weight: Optional[float] = None,
+        weighting_function: Optional[Callable[[float], float]] = None,
+    ) -> None:
+        if grid is not None:
+            if not self.pyopenvdb_support_enabled:
+                raise NotImplementedError("Please compile with PYOPENVDB_SUPPORT_ENABLED")
+            if weighting_function is not None:
+                return self._volume._integrate(grid, weighting_function)
+            if weight is not None:
+                return self._volume._integrate(grid, weight)
+            return self._volume._integrate(grid)
+        else:
+            assert isinstance(points, np.ndarray), "points must by np.ndarray(n, 3)"
+            assert points.dtype == np.float64, "points dtype must be np.float64"
+            assert isinstance(extrinsic, np.ndarray), "origin/extrinsic must by np.ndarray"
+            assert extrinsic.dtype == np.float64, "origin/extrinsic dtype must be np.float64"
+            assert extrinsic.shape in [
+                (3,),
+                (3, 1),
+                (4, 4),
+            ], "origin/extrinsic must be a (3,) array or a (4,4) matrix"
+
+            _points = vdbfusion_pybind._VectorEigen3d(points)
+            if weighting_function is not None:
+                return self._volume._integrate(_points, extrinsic, weighting_function)
+            if weight is not None:
+                return self._volume._integrate(_points, extrinsic, weight)
+            self._volume._integrate(_points, extrinsic)
+
+    @overload
+    def update_tsdf(
+        self, sdf: float, ijk: np.ndarray, weighting_function: Optional[Callable[[float], float]]
+    ) -> None:
+        ...
+
+    @overload
+    def update_tsdf(self, sdf: float, ijk: np.ndarray) -> None:
+        ...
 
     def update_tsdf(
         self,
         sdf: float,
         ijk: np.ndarray,
-        weighting_function: Callable[[float], float] = None,
+        weighting_function: Optional[Callable[[float], float]] = None,
     ) -> None:
-        assert isinstance(ijk, np.ndarray), "ijk must by np.ndarray(3,)"
-        assert ijk.dtype == np.int32, "ijk dtype must be np.int32"
-        if weighting_function:
-            self._volume._update_tsdf(sdf, ijk, weighting_function)
-        self._volume._update_tsdf(sdf, ijk)
+        if weighting_function is not None:
+            return self._volume._update_tsdf(sdf, ijk, weighting_function)
+        return self._volume._update_tsdf(sdf, ijk)
 
-    def extract_triangle_mesh(
-        self,
-        fill_holes: bool = True,
-        min_weight: float = 1.0,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def extract_triangle_mesh(self, fill_holes: bool = True, min_weight: float = 0.0) -> Tuple:
         """Returns a the vertices and triangles representing the constructed the TriangleMesh.
 
         If you can afford to use Open3D as dependency just pass the output of this function to the
@@ -102,3 +138,11 @@ class VDBVolume:
         Contains both D(x) and W(x) grids.
         """
         self._volume._extract_vdb_grids(out_file)
+
+    def prune(self, min_weight: float):
+        """Use the W(x) weights grid to cleanup the generated signed distance field according to a
+        minimum weight threshold.
+
+        This function is ideal to cleanup the TSDF grid:D(x) before exporting it.
+        """
+        return self._volume._prune(min_weight)

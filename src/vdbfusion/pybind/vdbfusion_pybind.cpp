@@ -57,8 +57,6 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
              "points"_a, "origin"_a, "weighting_function"_a)
         .def(
             "_integrate",
-            // Binding lambdas in python is expensive, create a default constnat weighting_function
-            // here to avoid ruining the C++ API with default arguments everywhere
             [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
                const Eigen::Vector3d& origin) {
                 self.Integrate(points, origin, [](float /*sdf*/) { return 1.0f; });
@@ -66,16 +64,45 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
             "points"_a, "origin"_a)
         .def(
             "_integrate",
-            // Binding lambdas in python is expensive, create a default constnat weighting_function
-            // here to avoid ruining the C++ API with default arguments everywhere
+            [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
+               const Eigen::Vector3d& origin, float weight) {
+                self.Integrate(points, origin, [=](float /*sdf*/) { return weight; });
+            },
+            "points"_a, "origin"_a, "weight"_a)
+        .def(
+            "_integrate",
             [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
                const Eigen::Matrix4d& extrinsics) {
                 self.Integrate(points, extrinsics, [](float /*sdf*/) { return 1.0f; });
             },
             "points"_a, "extrinsic"_a)
         .def(
+            "_integrate",
+            [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
+               const Eigen::Matrix4d& extrinsics, float weight) {
+                self.Integrate(points, extrinsics, [=](float /*sdf*/) { return weight; });
+            },
+            "points"_a, "origin"_a, "weight"_a)
+#ifdef PYOPENVDB_SUPPORT
+        .def("_integrate",
+             py::overload_cast<openvdb::FloatGrid::Ptr, const std::function<float(float)>&>(
+                 &VDBVolume::Integrate),
+             "grid"_a, "weighting_function"_a)
+        .def(
+            "_integrate",
+            [](VDBVolume& self, openvdb::FloatGrid::Ptr grid) {
+                self.Integrate(grid, [](float /*sdf*/) { return 1.0f; });
+            },
+            "grid"_a)
+        .def(
+            "_integrate",
+            [](VDBVolume& self, openvdb::FloatGrid::Ptr grid, float weight) {
+                self.Integrate(grid, [=](float /*sdf*/) { return weight; });
+            },
+            "grid"_a, "weight"_a)
+#endif
+        .def(
             "_update_tsdf",
-            // Create a lambda function to wrap the numpy int array to a openvdb::Coord type
             [](VDBVolume& self, const float& sdf, std::vector<int>& ijk,
                const std::function<float(float)>& weighting_function) {
                 self.UpdateTSDF(sdf, openvdb::Coord(ijk[0], ijk[1], ijk[2]), weighting_function);
@@ -97,7 +124,11 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
                 openvdb::io::File(filename).write({self.tsdf_, self.weights_});
             },
             "filename"_a)
-#ifdef PYOPENVDB_SUPPORT
+#ifndef PYOPENVDB_SUPPORT
+        .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return false; })
+#else
+        .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return true; })
+        .def("_prune", &VDBVolume::Prune, "min_weight"_a)
         .def_readwrite("_tsdf", &VDBVolume::tsdf_)
         .def_readwrite("_weights", &VDBVolume::weights_)
 #endif

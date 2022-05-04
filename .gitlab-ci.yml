@@ -33,28 +33,22 @@ format:
 ubuntu:cpp:build:
   stage: build
   script:
-    - mkdir build && cd build && cmake ..
-    - make -j$(nproc --all) all
-  artifacts:
-    paths:
-      - build/
-
-ubuntu:cpp:install:
-  stage: build
-  needs: ["ubuntu:cpp:build"]
-  script:
-    - cd build
-    - make install
+    - mkdir build && cd build && cmake .. && make -j$(nproc --all) all install
     - make uninstall
 
 ubuntu:cpp:example:
   stage: build
-  needs: ["ubuntu:cpp:install"]
+  needs: ["ubuntu:cpp:build"]
   script:
+    - mkdir build && cd build && cmake -DBUILD_CXX_EXAMPLE=ON .. && make -j$(nproc --all) install
+    - make uninstall
+
+ubuntu:cpp:standalone_example:
+  stage: build
+  needs: ["ubuntu:cpp:build"]
   script:
-    - mkdir build && cd build && cmake -DBUILD_CXX_EXAMPLE=ON .. && make install && cd ..
-    - cd examples/cpp/ && mkdir build && cd build && cmake ..
-    - make -j$(nproc --all) all
+    - mkdir build && cd build && cmake .. && make -j$(nproc --all) install && cd ..
+    - cd examples/cpp/ && mkdir build && cd build && cmake .. && make -j$(nproc --all)
 
 #----- ubuntu python jobs ---------------------------------------------------------------------------
 ubuntu:py:wheel:
@@ -103,9 +97,9 @@ manylinux:wheels:
   image: docker:19.03.12
   needs: ["ubuntu:py:wheel"]
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
   variables:
     DOCKER_IMAGE: "quay.io/pypa/manylinux2014_x86_64"
     PLAT: "manylinux2014_x86_64"
@@ -133,9 +127,9 @@ manylinux:test:
   needs: ["manylinux:wheels"]
   image: docker:19.03.12
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
   variables:
     DOCKER_IMAGE: "quay.io/pypa/manylinux2014_x86_64"
     PLAT: "manylinux2014_x86_64"
@@ -153,12 +147,12 @@ testpypi:
   stage: deploy
   needs: ["manylinux:test"]
   rules:
-    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - if: $CI_COMMIT_TAG
   variables:
     TWINE_PASSWORD: "${TESTPYPI_ACCESS_TOKEN}"
     TWINE_USERNAME: "__token__"
   script:
-    - twine upload --skip-existing --repository testpypi wheelhouse/*.whl
+    - twine upload --verbose --skip-existing --repository testpypi wheelhouse/*.whl
   artifacts:
     paths:
       - wheelhouse/
@@ -167,9 +161,9 @@ pypi:
   stage: deploy
   needs: ["testpypi"]
   rules:
-    - if: "$CI_COMMIT_TAG != null && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - if: $CI_COMMIT_TAG
   variables:
     TWINE_PASSWORD: "${PYPI_ACCESS_TOKEN}"
     TWINE_USERNAME: "__token__"
   script:
-    - twine upload --skip-existing --repository pypi wheelhouse/*.whl
+    - twine upload --verbose --skip-existing --repository pypi wheelhouse/*.whl

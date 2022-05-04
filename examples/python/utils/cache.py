@@ -23,7 +23,7 @@ def memoize(name=None, typed=False, expire=None, tag=None):
             cls = args[0]
             if not cls.use_cache:
                 return func(*args, **kwargs)
-            key = wrapper.__cache_key__(*args[1:], **kwargs)
+            key = wrapper.__cache_key__(*args, **kwargs)
             result = cls.cache.get(key, default=ENOVAL, retry=True)
 
             if result is ENOVAL:
@@ -35,7 +35,7 @@ def memoize(name=None, typed=False, expire=None, tag=None):
 
         def __cache_key__(*args, **kwargs):
             """Make key for cache given function arguments."""
-            return args_to_key(base, args, kwargs, typed)
+            return args_to_key(base, args, kwargs, typed, ignore={0, "self"})
 
         wrapper.__cache_key__ = __cache_key__
         return wrapper
