@@ -56,9 +56,7 @@ std::vector<Eigen::Vector3d> ReadKITTIVelodyne(const std::string& path) {
     return points;
 }
 
-void PreProcessCloud(std::vector<Eigen::Vector3d>& points, YAML::Node cfg) {
-    const double min_range = cfg["min_range"].as<float>();
-    const double max_range = cfg["max_range"].as<float>();
+void PreProcessCloud(std::vector<Eigen::Vector3d>& points, float min_range, float max_range) {
     points.erase(
         std::remove_if(points.begin(), points.end(), [&](auto p) { return p.norm() > max_range; }),
         points.end());
@@ -127,13 +125,51 @@ std::tuple<std::vector<float>, std::vector<Eigen::Matrix4d>> GetGTPoses(
 }  // namespace
 namespace datasets {
 
+KITTIConfig::KITTIConfig(const float voxel_size,
+                         const float sdf_trunc,
+                         const bool space_carving,
+                         const std::string& out_dir,
+                         const bool apply_pose,
+                         const bool preprocess,
+                         const bool fill_holes,
+                         const float min_weight,
+                         const float min_range,
+                         const float max_range)
+    : voxel_size_(voxel_size),
+      sdf_trunc_(sdf_trunc),
+      space_carving_(space_carving),
+      out_dir_(out_dir),
+      apply_pose_(apply_pose),
+      preprocess_(preprocess),
+      fill_holes_(fill_holes),
+      min_weight_(min_weight),
+      min_range_(min_range),
+      max_range_(max_range) {}
+
+KITTIConfig KITTIConfig::readFromYAML(const std::string& config_path) {
+    std::ifstream config_file(config_path, std::ios_base::in);
+    YAML::Node config = YAML::Load(config_file);
+
+    auto voxel_size = config["voxel_size"].as<float>();
+    auto sdf_trunc = config["sdf_trunc"].as<float>();
+    auto space_carving = config["space_carving"].as<bool>();
+    auto out_dir = config["out_dir"].as<std::string>();
+    auto apply_pose = config["apply_pose"].as<bool>();
+    auto preprocess = config["preprocess"].as<bool>();
+    auto fill_holes = config["fill_holes"].as<bool>();
+    auto min_weight = config["min_weight"].as<float>();
+    auto min_range = config["min_range"].as<float>();
+    auto max_range = config["max_range"].as<float>();
+
+    return KITTIConfig(voxel_size, sdf_trunc, space_carving, out_dir, apply_pose, preprocess,
+                       fill_holes, min_weight, min_range, max_range);
+}
+
 KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
                            const std::string& sequence,
-                           YAML::Node& cfg,
+                           const KITTIConfig& cfg,
                            int n_scans)
-    : cfg_(cfg),
-      preprocess_(cfg["preprocess"].as<bool>()),
-      apply_pose_(cfg["apply_pose"].as<bool>()) {
+    : cfg_(cfg) {
     // TODO: to be completed
     auto kitti_root_dir_ = fs::absolute(fs::path(kitti_root_dir));
     auto kitti_sequence_dir = fs::absolute(fs::path(kitti_root_dir) / "sequences" / sequence);
@@ -148,11 +184,10 @@ KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
 std::tuple<float, std::vector<Eigen::Vector3d>, Eigen::Vector3d> KITTIDataset::operator[](
     int idx) const {
     std::vector<Eigen::Vector3d> points = ReadKITTIVelodyne(scan_files_[idx]);
-    if (preprocess_) PreProcessCloud(points, cfg_);
-    if (apply_pose_) TransformPoints(points, poses_[idx]);
+    if (cfg_.preprocess_) PreProcessCloud(points, cfg_.min_range_, cfg_.max_range_);
+    if (cfg_.apply_pose_) TransformPoints(points, poses_[idx]);
     const Eigen::Vector3d origin = poses_[idx].block<3, 1>(0, 3);
     const float timestamp = time_[idx];
     return std::make_tuple(timestamp, points, origin);
 }
-
 }  // namespace datasets

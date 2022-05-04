@@ -11,7 +11,6 @@
 #include "datasets/KITTIOdometry.h"
 #include "utils/Iterable.h"
 #include "utils/Timers.h"
-#include "yaml-cpp/yaml.h"
 
 // Namespace aliases
 using namespace fmt::literals;
@@ -57,16 +56,7 @@ int main(int argc, char* argv[]) {
 
     // VDBVolume configuration
     auto config_path = argparser.get<std::string>("--config");
-
-    std::ifstream config_file(config_path, std::ios_base::in);
-    YAML::Node config = YAML::Load(config_file);
-
-    auto voxel_size = config["voxel_size"].as<float>();
-    auto sdf_trunc = config["sdf_trunc"].as<float>();
-    auto space_carving = config["space_carving"].as<bool>();
-    auto out_dir = config["out_dir"].as<std::string>();
-    auto fill_holes = config["fill_holes"].as<bool>();
-    auto min_weight = config["min_weight"].as<float>();
+    datasets::KITTIConfig cfg = datasets::KITTIConfig::readFromYAML(config_path);
 
     openvdb::initialize();
 
@@ -76,11 +66,10 @@ int main(int argc, char* argv[]) {
     auto sequence = argparser.get<std::string>("--sequence");
 
     // Initialize dataset
-
-    const auto dataset = datasets::KITTIDataset(kitti_root_dir, sequence, config, n_scans);
+    const auto dataset = datasets::KITTIDataset(kitti_root_dir, sequence, cfg, n_scans);
 
     fmt::print("Integrating {} scans\n", dataset.size());
-    vdbfusion::VDBVolume tsdf_volume(voxel_size, sdf_trunc, space_carving);
+    vdbfusion::VDBVolume tsdf_volume(cfg.voxel_size_, cfg.sdf_trunc_, cfg.space_carving_);
     timers::FPSTimer<10> timer;
     for (const auto& [timestamp, scan, origin] : iterable(dataset)) {
         timer.tic();
@@ -90,7 +79,7 @@ int main(int argc, char* argv[]) {
 
     // Store the grid results to disks
     std::string map_name =
-        fmt::format("{out_dir}/kitti_{seq}_{n_scans}_scans", "out_dir"_a = out_dir,
+        fmt::format("{out_dir}/kitti_{seq}_{n_scans}_scans", "out_dir"_a = cfg.out_dir_,
                     "seq"_a = sequence, "n_scans"_a = n_scans);
     {
         timers::ScopeTimer timer("Writing VDB grid to disk");
@@ -102,7 +91,8 @@ int main(int argc, char* argv[]) {
     // Run marching cubes and save a .ply file
     {
         timers::ScopeTimer timer("Writing Mesh to disk");
-        auto [vertices, triangles] = tsdf_volume.ExtractTriangleMesh(fill_holes, min_weight);
+        auto [vertices, triangles] =
+            tsdf_volume.ExtractTriangleMesh(cfg.fill_holes_, cfg.min_weight_);
 
         // TODO: Fix this!
         Eigen::MatrixXd V(vertices.size(), 3);

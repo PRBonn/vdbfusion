@@ -5,8 +5,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   find_package(VDBFusion REQUIRED)
 endif()
 
-find_package(yaml-cpp REQUIRED)
-
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
