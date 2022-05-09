@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     fmt::print("Integrating {} scans\n", dataset.size());
     vdbfusion::VDBVolume tsdf_volume(cfg.voxel_size_, cfg.sdf_trunc_, cfg.space_carving_);
     timers::FPSTimer<10> timer;
-    for (const auto& [timestamp, scan, origin] : iterable(dataset)) {
+    for (const auto& [scan, origin] : iterable(dataset)) {
         timer.tic();
         tsdf_volume.Integrate(scan, origin, [](float /*unused*/) { return 1.0; });
         timer.toc();
