@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "yaml-cpp/yaml.h"
-
 namespace fs = std::filesystem;
 
 namespace {
@@ -118,52 +116,30 @@ std::vector<Eigen::Matrix4d> GetGTPoses(const fs::path& poses_file, const fs::pa
 }  // namespace
 namespace datasets {
 
-KITTIConfig::KITTIConfig(const float voxel_size,
-                         const float sdf_trunc,
-                         const bool space_carving,
-                         const std::string& out_dir,
-                         const bool apply_pose,
-                         const bool preprocess,
-                         const bool fill_holes,
-                         const float min_weight,
-                         const float min_range,
-                         const float max_range)
-    : voxel_size_(voxel_size),
-      sdf_trunc_(sdf_trunc),
-      space_carving_(space_carving),
-      out_dir_(out_dir),
-      apply_pose_(apply_pose),
-      preprocess_(preprocess),
-      fill_holes_(fill_holes),
-      min_weight_(min_weight),
-      min_range_(min_range),
-      max_range_(max_range) {}
+KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
+                           const std::string& sequence,
+                           int n_scans) {
+    // TODO: to be completed
+    auto kitti_root_dir_ = fs::absolute(fs::path(kitti_root_dir));
+    auto kitti_sequence_dir = fs::absolute(fs::path(kitti_root_dir) / "sequences" / sequence);
 
-KITTIConfig KITTIConfig::readFromYAML(const std::string& config_path) {
-    std::ifstream config_file(config_path, std::ios_base::in);
-    YAML::Node config = YAML::Load(config_file);
-
-    auto voxel_size = config["voxel_size"].as<float>();
-    auto sdf_trunc = config["sdf_trunc"].as<float>();
-    auto space_carving = config["space_carving"].as<bool>();
-    auto out_dir = config["out_dir"].as<std::string>();
-    auto apply_pose = config["apply_pose"].as<bool>();
-    auto preprocess = config["preprocess"].as<bool>();
-    auto fill_holes = config["fill_holes"].as<bool>();
-    auto min_weight = config["min_weight"].as<float>();
-    auto min_range = config["min_range"].as<float>();
-    auto max_range = config["max_range"].as<float>();
-
-    return KITTIConfig(voxel_size, sdf_trunc, space_carving, out_dir, apply_pose, preprocess,
-                       fill_holes, min_weight, min_range, max_range);
+    // Read data, cache it inside the class.
+    poses_ = GetGTPoses(kitti_root_dir_ / "poses" / std::string(sequence + ".txt"),
+                        kitti_sequence_dir / "calib.txt");
+    scan_files_ = GetVelodyneFiles(fs::absolute(kitti_sequence_dir / "velodyne/"), n_scans);
 }
 
 KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
                            const std::string& sequence,
-                           const KITTIConfig& cfg,
-                           int n_scans)
-    : cfg_(cfg) {
-    // TODO: to be completed
+                           int n_scans,
+                           bool apply_pose,
+                           bool preprocess,
+                           float min_range,
+                           float max_range)
+    : apply_pose_(apply_pose),
+      preprocess_(preprocess),
+      min_range_(min_range),
+      max_range_(max_range) {
     auto kitti_root_dir_ = fs::absolute(fs::path(kitti_root_dir));
     auto kitti_sequence_dir = fs::absolute(fs::path(kitti_root_dir) / "sequences" / sequence);
 
@@ -175,8 +151,8 @@ KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
 
 std::tuple<std::vector<Eigen::Vector3d>, Eigen::Vector3d> KITTIDataset::operator[](int idx) const {
     std::vector<Eigen::Vector3d> points = ReadKITTIVelodyne(scan_files_[idx]);
-    if (cfg_.preprocess_) PreProcessCloud(points, cfg_.min_range_, cfg_.max_range_);
-    if (cfg_.apply_pose_) TransformPoints(points, poses_[idx]);
+    if (preprocess_) PreProcessCloud(points, min_range_, max_range_);
+    if (apply_pose_) TransformPoints(points, poses_[idx]);
     const Eigen::Vector3d origin = poses_[idx].block<3, 1>(0, 3);
     return std::make_tuple(points, origin);
 }
