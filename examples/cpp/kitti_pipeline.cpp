@@ -6,9 +6,11 @@
 
 #include <argparse/argparse.hpp>
 #include <filesystem>
+#include <fstream>
 #include <string>
 
 #include "datasets/KITTIOdometry.h"
+#include "utils/Config.h"
 #include "utils/Iterable.h"
 #include "utils/Timers.h"
 
@@ -22,27 +24,16 @@ namespace {
 argparse::ArgumentParser ArgParse(int argc, char* argv[]) {
     argparse::ArgumentParser argparser("KITTIPipeline");
     argparser.add_argument("kitti_root_dir").help("The full path to the KITTI dataset");
+    argparser.add_argument("mesh_output_dir").help("Directory to store the resultant mesh");
     argparser.add_argument("--sequence").help("KITTI Sequence");
-    argparser.add_argument("--voxel_size")
-        .help("Size in meters of each voxel")
-        .default_value(float(0.1))
-        .action([](const std::string& value) { return std::stof(value); });
-    argparser.add_argument("--sdf_trunc")
-        .help("Truncation SDF value")
-        .default_value(float(0.3))
-        .action([](const std::string& value) { return std::stof(value); });
+    argparser.add_argument("--config")
+        .help("Dataset specific config file")
+        .default_value<std::string>("config/kitti.yaml")
+        .action([](const std::string& value) { return value; });
     argparser.add_argument("--n_scans")
         .help("How many scans to map")
         .default_value(int(-1))
         .action([](const std::string& value) { return std::stoi(value); });
-    argparser.add_argument("--space_carving")
-        .help("Activcate space_carving flag for mapping")
-        .default_value(false)
-        .implicit_value(true);
-    argparser.add_argument("--preprocess")
-        .help("Preprocebin input point_cloud")
-        .default_value(false)
-        .implicit_value(true);
 
     try {
         argparser.parse_args(argc, argv);
@@ -60,16 +51,16 @@ argparse::ArgumentParser ArgParse(int argc, char* argv[]) {
     }
     return argparser;
 }
-
 }  // namespace
 
 int main(int argc, char* argv[]) {
     auto argparser = ArgParse(argc, argv);
 
     // VDBVolume configuration
-    auto voxel_size = argparser.get<float>("--voxel_size");
-    auto sdf_trunc = argparser.get<float>("--sdf_trunc");
-    auto space_carving = argparser.get<bool>("--space_carving");
+    auto vdbfusion_cfg =
+        vdbfusion::VDBFusionConfig::LoadFromYAML(argparser.get<std::string>("--config"));
+    // Dataset specific configuration
+    auto kitti_cfg = datasets::KITTIConfig::LoadFromYAML(argparser.get<std::string>("--config"));
 
     openvdb::initialize();
 
@@ -79,11 +70,13 @@ int main(int argc, char* argv[]) {
     auto sequence = argparser.get<std::string>("--sequence");
 
     // Initialize dataset
-
-    const auto dataset = datasets::KITTIDataset(kitti_root_dir, sequence, n_scans);
+    const auto dataset =
+        datasets::KITTIDataset(kitti_root_dir, sequence, n_scans, kitti_cfg.apply_pose_,
+                               kitti_cfg.preprocess_, kitti_cfg.min_range_, kitti_cfg.max_range_);
 
     fmt::print("Integrating {} scans\n", dataset.size());
-    vdbfusion::VDBVolume tsdf_volume(voxel_size, sdf_trunc, space_carving);
+    vdbfusion::VDBVolume tsdf_volume(vdbfusion_cfg.voxel_size_, vdbfusion_cfg.sdf_trunc_,
+                                     vdbfusion_cfg.space_carving_);
     timers::FPSTimer<10> timer;
     for (const auto& [scan, origin] : iterable(dataset)) {
         timer.tic();
@@ -92,8 +85,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Store the grid results to disks
-    std::string map_name = fmt::format("results/kitti_{seq}_{n_scans}_scans", "seq"_a = sequence,
-                                       "n_scans"_a = n_scans);
+    std::string map_name = fmt::format("{out_dir}/kitti_{seq}_{n_scans}_scans",
+                                       "out_dir"_a = argparser.get<std::string>("mesh_output_dir"),
+                                       "seq"_a = sequence, "n_scans"_a = n_scans);
     {
         timers::ScopeTimer timer("Writing VDB grid to disk");
         auto tsdf_grid = tsdf_volume.tsdf_;
@@ -104,7 +98,8 @@ int main(int argc, char* argv[]) {
     // Run marching cubes and save a .ply file
     {
         timers::ScopeTimer timer("Writing Mesh to disk");
-        auto [vertices, triangles] = tsdf_volume.ExtractTriangleMesh();
+        auto [vertices, triangles] =
+            tsdf_volume.ExtractTriangleMesh(vdbfusion_cfg.fill_holes_, vdbfusion_cfg.min_weight_);
 
         // TODO: Fix this!
         Eigen::MatrixXd V(vertices.size(), 3);

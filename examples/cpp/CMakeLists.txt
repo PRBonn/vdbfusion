@@ -14,5 +14,5 @@ add_subdirectory(datasets)
 
 add_executable(kitti_pipeline kitti_pipeline.cpp)
 target_compile_features(kitti_pipeline PUBLIC cxx_std_11)
-target_link_libraries(kitti_pipeline PRIVATE VDBFusion::vdbfusion argparse::argparse fmt::fmt igl::core datasets)
+target_link_libraries(kitti_pipeline PRIVATE VDBFusion::vdbfusion argparse::argparse fmt::fmt igl::core datasets yaml-cpp)
 set_target_properties(kitti_pipeline PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
