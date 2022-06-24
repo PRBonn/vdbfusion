@@ -54,9 +54,7 @@ std::vector<Eigen::Vector3d> ReadKITTIVelodyne(const std::string& path) {
     return points;
 }
 
-void PreProcessCloud(std::vector<Eigen::Vector3d>& points) {
-    const double min_range = 2.0;
-    const double max_range = 70.0;
+void PreProcessCloud(std::vector<Eigen::Vector3d>& points, float min_range, float max_range) {
     points.erase(
         std::remove_if(points.begin(), points.end(), [&](auto p) { return p.norm() > max_range; }),
         points.end());
@@ -131,14 +129,31 @@ KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
     scan_files_ = GetVelodyneFiles(fs::absolute(kitti_sequence_dir / "velodyne/"), n_scans);
 }
 
+KITTIDataset::KITTIDataset(const std::string& kitti_root_dir,
+                           const std::string& sequence,
+                           int n_scans,
+                           bool apply_pose,
+                           bool preprocess,
+                           float min_range,
+                           float max_range)
+    : apply_pose_(apply_pose),
+      preprocess_(preprocess),
+      min_range_(min_range),
+      max_range_(max_range) {
+    auto kitti_root_dir_ = fs::absolute(fs::path(kitti_root_dir));
+    auto kitti_sequence_dir = fs::absolute(fs::path(kitti_root_dir) / "sequences" / sequence);
+
+    // Read data, cache it inside the class.
+    poses_ = GetGTPoses(kitti_root_dir_ / "poses" / std::string(sequence + ".txt"),
+                        kitti_sequence_dir / "calib.txt");
+    scan_files_ = GetVelodyneFiles(fs::absolute(kitti_sequence_dir / "velodyne/"), n_scans);
+}
+
 std::tuple<std::vector<Eigen::Vector3d>, Eigen::Vector3d> KITTIDataset::operator[](int idx) const {
-    const bool preprocess = true;
-    const bool apply_pose = true;
     std::vector<Eigen::Vector3d> points = ReadKITTIVelodyne(scan_files_[idx]);
-    if (preprocess) PreProcessCloud(points);
-    if (apply_pose) TransformPoints(points, poses_[idx]);
+    if (preprocess_) PreProcessCloud(points, min_range_, max_range_);
+    if (apply_pose_) TransformPoints(points, poses_[idx]);
     const Eigen::Vector3d origin = poses_[idx].block<3, 1>(0, 3);
     return std::make_tuple(points, origin);
 }
-
 }  // namespace datasets

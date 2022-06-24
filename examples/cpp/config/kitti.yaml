@@ -1,0 +1,14 @@
+# VDBFUSION
+voxel_size: 0.1
+sdf_trunc: 0.3
+space_carving: False
+
+# Reconstruction
+fill_holes: True
+min_weight: 5.0
+
+# Kitti
+apply_pose: True
+preprocess: True
+min_range: 2.0
+max_range: 70.0
