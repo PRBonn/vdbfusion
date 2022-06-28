@@ -1,4 +1,6 @@
-.PHONY: install docker
+.PHONY: install docker format
+SOURCES := $(shell find . -regextype posix-extended -regex  ".*\.(cpp|cxx|cc|hpp|hxx|h)" | grep -vE "^./(build|3rdparty)/")
+
 install:
 	pip3 -v install . && cp build/*/compile_commands.json build/
 
@@ -13,6 +15,9 @@ test:
 
 clean:
 	git clean -xf . && rm -rf build/
+
+format:
+	clang-format -i $(SOURCES)
 
 # Docker targets
 docker:
