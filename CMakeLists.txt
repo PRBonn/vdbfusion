@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(VDBFusion VERSION 0.1.6 LANGUAGES CXX)
 
+set (CMAKE_CXX_STANDARD 17)
+
 # Setup build options
 option(USE_CCACHE "Build using Ccache if found on the path" ON)
 option(USE_SYSTEM_EIGEN3 "Use system pre-installed eigen3" ON)
