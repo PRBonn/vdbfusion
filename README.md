@@ -24,6 +24,8 @@ pip install vdbfusion
 
 If you plan to use our C++ API then you should build this project from source. More details in the [Installation instructions](INSTALL.md).
 
+The ROS-1 C++ wrapper for this library is available at https://github.com/PRBonn/vdbfusion_ros
+
 ## Usage
 
 The code shown below is not intended to be copy pasted but rather be a spiritual guide for developers. If you really want to give this library a try you should consider checking the standalone [Python](examples/python), [Notebooks](examples/notebooks), and [C++](examples/cpp) examples.
