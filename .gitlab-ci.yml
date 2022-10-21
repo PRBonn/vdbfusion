@@ -27,7 +27,7 @@ format:
   stage: format
   script:
     - black --check .
-    # - clang-format ?
+    - bash ./ci/run_clang_format.sh
 
 #----- ubuntu C++ jobs ------------------------------------------------------------------------------
 ubuntu:cpp:build:

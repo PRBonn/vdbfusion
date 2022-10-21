@@ -16,29 +16,29 @@ public:
 public:
     /// @brief Integrates a new (globally aligned) PointCloud into the current
     /// tsdf_ volume.
-    void Integrate(const std::vector<Eigen::Vector3d> &points,
-                   const std::vector<openvdb::Vec3i> &colors,
-                   const Eigen::Vector3d &origin,
-                   const std::function<float(float)> &weighting_function);
+    void Integrate(const std::vector<Eigen::Vector3d>& points,
+                   const std::vector<openvdb::Vec3i>& colors,
+                   const Eigen::Vector3d& origin,
+                   const std::function<float(float)>& weighting_function);
 
     /// @brief Integrates a new (globally aligned) PointCloud into the current
     /// tsdf_ volume.
-    void inline Integrate(const std::vector<Eigen::Vector3d> &points,
-                          const std::vector<openvdb::Vec3i> &colors,
-                          const Eigen::Matrix4d &extrinsics,
-                          const std::function<float(float)> &weighting_function) {
+    void inline Integrate(const std::vector<Eigen::Vector3d>& points,
+                          const std::vector<openvdb::Vec3i>& colors,
+                          const Eigen::Matrix4d& extrinsics,
+                          const std::function<float(float)>& weighting_function) {
         const Eigen::Vector3d &origin = extrinsics.block<3, 1>(0, 3);
         Integrate(points, colors, origin, weighting_function);
     }
 
     /// @brief Integrate incoming TSDF grid inside the current volume using the TSDF equations
     void Integrate(openvdb::FloatGrid::Ptr grid,
-                   const std::function<float(float)> &weighting_function);
+                   const std::function<float(float)>& weighting_function);
 
     /// @brief Fuse a new given sdf value at the given voxel location, thread-safe
-    void UpdateTSDF(const float &sdf,
-                    const openvdb::Coord &voxel,
-                    const std::function<float(float)> &weighting_function);
+    void UpdateTSDF(const float& sdf,
+                    const openvdb::Coord& voxel,
+                    const std::function<float(float)>& weighting_function);
 
     /// @brief Prune TSDF grids, ideal utility to cleanup a D(x) volume before exporting it
     openvdb::FloatGrid::Ptr Prune(float min_weight) const;

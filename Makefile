@@ -1,6 +1,4 @@
-.PHONY: install docker format
-SOURCES := $(shell find . -regextype posix-extended -regex  ".*\.(cpp|cxx|cc|hpp|hxx|h)" | grep -vE "^./(build|3rdparty)/")
-
+.PHONY: install docker
 install:
 	pip3 -v install . && cp build/*/compile_commands.json build/
 

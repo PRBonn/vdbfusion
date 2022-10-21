@@ -20,13 +20,13 @@ namespace type_traits {
 
 template <typename>
 struct get_string_type {
-    static char const *value();
+    static const char* value();
 };
 
 #define REGISTER_PERIOD_TYPE(T)                             \
     template <>                                             \
     struct get_string_type<T> {                             \
-        static char const *value() { return #T "seconds"; } \
+        static const char* value() { return #T "seconds"; } \
     };
 
 using namespace std;
@@ -55,7 +55,7 @@ template <typename Period = std::milli, typename FloatT = double>
 class ScopeTimer {
 public:
     using TimeT = std::chrono::duration<FloatT, Period>;
-    ScopeTimer(const std::string &timer_info) : timer_info_(timer_info) { start_time_ = tic(); }
+    ScopeTimer(const std::string& timer_info) : timer_info_(timer_info) { start_time_ = tic(); }
     ~ScopeTimer() {
         fmt::print("{} took {:.2f} {}.\n", timer_info_, GetDuration(), GetPeriodType());
     }
@@ -73,8 +73,8 @@ private:
 public:
     // Avoid strange creation of the ScopteTimer object
     ScopeTimer() = delete;
-    ScopeTimer(const ScopeTimer &) = delete;
-    void operator=(const ScopeTimer &) = delete;
+    ScopeTimer(const ScopeTimer&) = delete;
+    void operator=(const ScopeTimer&) = delete;
 
 private:
     FloatT start_time_ = 0.0;
