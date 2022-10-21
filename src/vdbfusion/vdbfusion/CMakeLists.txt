@@ -14,7 +14,6 @@ if(NOT TARGET Eigen3::Eigen OR NOT TARGET OpenVDB::openvdb)
   find_package(OpenVDB REQUIRED)
 endif()
 
-add_compile_options(-gdwarf-4)
 target_sources(vdbfusion PRIVATE MarchingCubes.cpp VDBVolume.cpp)
 target_compile_features(vdbfusion PUBLIC cxx_std_11)
 target_compile_options(vdbfusion PRIVATE -Wall -Wextra)
@@ -29,6 +28,3 @@ target_link_libraries(vdbfusion PUBLIC Eigen3::Eigen OpenVDB::openvdb)
 if((USE_SYSTEM_EIGEN3 AND USE_SYSTEM_OPENVDB) OR VDBFUSION_STANDALONE)
   include(cmake/Install.cmake)
 endif()
-
-# Google tests
-add_subdirectory(tests)

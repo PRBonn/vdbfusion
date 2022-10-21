@@ -16,9 +16,6 @@ test:
 clean:
 	git clean -xf . && rm -rf build/
 
-format:
-	clang-format -i $(SOURCES)
-
 # Docker targets
 docker:
 	@echo Building builder docker container

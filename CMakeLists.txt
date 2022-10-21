@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(VDBFusion VERSION 0.1.6 LANGUAGES CXX)
 
-set (CMAKE_CXX_STANDARD 17)
-
 # Setup build options
 option(USE_CCACHE "Build using Ccache if found on the path" ON)
 option(USE_SYSTEM_EIGEN3 "Use system pre-installed eigen3" ON)
@@ -18,8 +16,6 @@ if(SILENCE_WARNINGS)
   message(WARNING "Disable all warnings for all targets in the build system, only for the CI/CD")
   add_compile_options(-w)
 endif()
-
-add_compile_options(-gdwarf-4)
 
 # ccache setup
 if(USE_CCACHE)
