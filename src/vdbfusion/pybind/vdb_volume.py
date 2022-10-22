@@ -43,13 +43,13 @@ class VDBVolume:
     ) -> None:
         ...
 
-    @overload
-    def integrate(self, points: np.ndarray, extrinsic: np.ndarray, weight: float) -> None:
-        ...
+    # @overload
+    # def integrate(self, points: np.ndarray, extrinsic: np.ndarray, weight: float) -> None:
+    #     ...
 
-    @overload
-    def integrate(self, points: np.ndarray, extrinsic: np.ndarray) -> None:
-        ...
+    # @overload
+    # def integrate(self, points: np.ndarray, extrinsic: np.ndarray) -> None:
+    #     ...
 
     @overload
     def integrate(self, grid, weighting_function: Callable[[float], float]) -> None:
@@ -66,11 +66,16 @@ class VDBVolume:
     def integrate(
         self,
         points: Optional[np.ndarray] = None,
+        colors: Optional[np.ndarray] = None,
         extrinsic: Optional[np.ndarray] = None,
         grid: Optional[Any] = None,
         weight: Optional[float] = None,
         weighting_function: Optional[Callable[[float], float]] = None,
     ) -> None:
+
+        assert (weighting_function is None) or (weight is None), (
+            "Not both weighting_function and weight can be defined"
+        )
         if grid is not None:
             if not self.pyopenvdb_support_enabled:
                 raise NotImplementedError("Please compile with PYOPENVDB_SUPPORT_ENABLED")
@@ -91,11 +96,17 @@ class VDBVolume:
             ], "origin/extrinsic must be a (3,) array or a (4,4) matrix"
 
             _points = vdbfusion_pybind._VectorEigen3d(points)
+            if colors is not None:
+                _colors = vdbfusion_pybind._VectorEigen3d(colors)
+            else:
+                _colors = vdbfusion_pybind._VectorEigen3d(np.zeros((0, 3), dtype=np.float64))
             if weighting_function is not None:
-                return self._volume._integrate(_points, extrinsic, weighting_function)
-            if weight is not None:
-                return self._volume._integrate(_points, extrinsic, weight)
-            self._volume._integrate(_points, extrinsic)
+                _weighting_function = weighting_function
+            elif weight is not None:
+                _weighting_function = lambda x: weight
+            else:
+                _weighting_function = lambda x: 1.0
+            self._volume._integrate(_points, _colors, extrinsic, _weighting_function)
 
     @overload
     def update_tsdf(
@@ -128,9 +139,10 @@ class VDBVolume:
             o3d.utility.Vector3dVector(vertices),
             o3d.utility.Vector3iVector(triangles),
         )
+        mesh.vertex_colors = o3d.utility.Vector3dVector(colors)
         """
-        vertices, triangles = self._volume._extract_triangle_mesh(fill_holes, min_weight)
-        return np.asarray(vertices), np.asarray(triangles)
+        vertices, triangles, colors = self._volume._extract_triangle_mesh(fill_holes, min_weight)
+        return np.asarray(vertices), np.asarray(triangles), np.asarray(colors)
 
     def extract_vdb_grids(self, out_file: str) -> None:
         """For now, write the internal map representation to a file.

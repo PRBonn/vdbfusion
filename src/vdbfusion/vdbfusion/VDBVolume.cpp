@@ -95,7 +95,7 @@ void VDBVolume::Integrate(openvdb::FloatGrid::Ptr grid,
 }
 
 void VDBVolume::Integrate(const std::vector<Eigen::Vector3d>& points,
-                          const std::vector<openvdb::Vec3i>& colors,
+                          const std::vector<Eigen::Vector3d>& colors,
                           const Eigen::Vector3d& origin,
                           const std::function<float(float)>& weighting_function) {
     if (points.empty()) {
@@ -147,8 +147,9 @@ void VDBVolume::Integrate(const std::vector<Eigen::Vector3d>& points,
                 tsdf_acc.setValue(voxel, new_tsdf);
                 weights_acc.setValue(voxel, new_weight);
                 if (has_colors) {
+                    const auto pts_color = openvdb::Vec3i(int(colors[i][0]), int(colors[i][1]), int(colors[i][2]));
                     const auto color = colors_acc.getValue(voxel);
-                    const auto new_color = BlendColors(color, last_weight, colors[i], weight);
+                    const auto new_color = BlendColors(color, last_weight, pts_color, weight);
                     colors_acc.setValue(voxel, new_color);
                 }
             }

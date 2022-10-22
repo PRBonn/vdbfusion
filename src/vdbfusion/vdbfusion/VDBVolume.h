@@ -17,14 +17,14 @@ public:
     /// @brief Integrates a new (globally aligned) PointCloud into the current
     /// tsdf_ volume.
     void Integrate(const std::vector<Eigen::Vector3d>& points,
-                   const std::vector<openvdb::Vec3i>& colors,
+                   const std::vector<Eigen::Vector3d>& colors,
                    const Eigen::Vector3d& origin,
                    const std::function<float(float)>& weighting_function);
 
     /// @brief Integrates a new (globally aligned) PointCloud into the current
     /// tsdf_ volume.
     void inline Integrate(const std::vector<Eigen::Vector3d>& points,
-                          const std::vector<openvdb::Vec3i>& colors,
+                          const std::vector<Eigen::Vector3d>& colors,
                           const Eigen::Matrix4d& extrinsics,
                           const std::function<float(float)>& weighting_function) {
         const Eigen::Vector3d &origin = extrinsics.block<3, 1>(0, 3);
