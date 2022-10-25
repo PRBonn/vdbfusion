@@ -27,7 +27,7 @@ float ComputeSDF(const Eigen::Vector3d& origin,
     return static_cast<float>(sign * dist);
 }
 
-Eigen::Vector3d GetVoxelCenter(const openvdb::Coord& voxel, const openvdb::math::Transform& xform) {
+Eigen::Vector3d GetVoxelCenter(const openvdb::Coord& voxel, const openvdb::math::Transform& xform, double gamma=2.2) {
     const float voxel_size = xform.voxelSize()[0];
     openvdb::math::Vec3d v_wf = xform.indexToWorld(voxel) + voxel_size / 2.0;
     return Eigen::Vector3d(v_wf.x(), v_wf.y(), v_wf.z());
@@ -40,9 +40,11 @@ openvdb::Vec3i BlendColors(const openvdb::Vec3i& color1,
     float weight_sum = weight1 + weight2;
     weight1 /= weight_sum;
     weight2 /= weight_sum;
-    return {static_cast<int>(round(color1[0] * weight1 + color2[0] * weight2)),
-            static_cast<int>(round(color1[1] * weight1 + color2[1] * weight2)),
-            static_cast<int>(round(color1[2] * weight1 + color2[2] * weight2))};
+    return {
+        static_cast<int>(round(pow(pow(color1[0], gamma) * weight1 + pow(color2[0], gamma) * weight2, 1./gamma))),
+        static_cast<int>(round(pow(pow(color1[1], gamma) * weight1 + pow(color2[1], gamma) * weight2, 1./gamma))),
+        static_cast<int>(round(pow(pow(color1[2], gamma) * weight1 + pow(color2[2], gamma) * weight2, 1./gamma)))
+    };
 }
 
 }  // namespace
