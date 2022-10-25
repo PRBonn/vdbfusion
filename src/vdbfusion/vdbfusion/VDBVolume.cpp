@@ -27,7 +27,7 @@ float ComputeSDF(const Eigen::Vector3d& origin,
     return static_cast<float>(sign * dist);
 }
 
-Eigen::Vector3d GetVoxelCenter(const openvdb::Coord& voxel, const openvdb::math::Transform& xform, double gamma=2.2) {
+Eigen::Vector3d GetVoxelCenter(const openvdb::Coord& voxel, const openvdb::math::Transform& xform) {
     const float voxel_size = xform.voxelSize()[0];
     openvdb::math::Vec3d v_wf = xform.indexToWorld(voxel) + voxel_size / 2.0;
     return Eigen::Vector3d(v_wf.x(), v_wf.y(), v_wf.z());
@@ -36,7 +36,8 @@ Eigen::Vector3d GetVoxelCenter(const openvdb::Coord& voxel, const openvdb::math:
 openvdb::Vec3i BlendColors(const openvdb::Vec3i& color1,
                            float weight1,
                            const openvdb::Vec3i& color2,
-                           float weight2) {
+                           float weight2,
+                           double gamma=2.2) {
     float weight_sum = weight1 + weight2;
     weight1 /= weight_sum;
     weight2 /= weight_sum;
