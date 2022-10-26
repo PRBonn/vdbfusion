@@ -54,7 +54,9 @@ namespace vdbfusion {
 
 VDBVolume::VDBVolume(float voxel_size, float sdf_trunc, bool space_carving /* = false*/)
     : voxel_size_(voxel_size), sdf_trunc_(sdf_trunc), space_carving_(space_carving) {
-    tsdf_ = openvdb::FloatGrid::create(sdf_trunc_);
+    float background = sdf_trunc_;
+    if (space_carving == true) background *= -1.0;
+    tsdf_ = openvdb::FloatGrid::create(background);
     tsdf_->setName("D(x): signed distance grid");
     tsdf_->setTransform(openvdb::math::Transform::createLinearTransform(voxel_size_));
     tsdf_->setGridClass(openvdb::GRID_LEVEL_SET);
