@@ -144,12 +144,19 @@ class VDBVolume:
         vertices, triangles, colors = self._volume._extract_triangle_mesh(fill_holes, min_weight)
         return np.asarray(vertices), np.asarray(triangles), np.asarray(colors)
 
-    def extract_vdb_grids(self, out_file: str) -> None:
+    def write_vdb_grids(self, out_file: str) -> None:
         """For now, write the internal map representation to a file.
 
         Contains both D(x) and W(x) grids.
         """
-        self._volume._extract_vdb_grids(out_file)
+        self._volume._write_vdb_grids(out_file)
+
+    def read_vdb_grids(self, in_file: str) -> None:
+        """For now, write the internal map representation to a file.
+
+        Contains both D(x) and W(x) grids.
+        """
+        self._volume._read_vdb_grids(in_file)
 
     def prune(self, min_weight: float):
         """Use the W(x) weights grid to cleanup the generated signed distance field according to a

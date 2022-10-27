@@ -21,6 +21,8 @@
 #include "stl_vector_eigen.h"
 #include "vdbfusion/VDBVolume.h"
 
+#include <openvdb/tools/Dense.h>
+
 PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3d>);
 PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3i>);
 
@@ -28,6 +30,17 @@ namespace py = pybind11;
 using namespace py::literals;
 
 namespace vdbfusion {
+
+py::array_t<float> ToNumpy(openvdb::FloatGrid::Ptr grid) {
+    openvdb::CoordBBox bbox = grid->evalActiveVoxelBoundingBox();
+    openvdb::Coord shape = bbox.dim();
+
+    openvdb::tools::Dense<float, openvdb::tools::LayoutZYX> dense(bbox);
+    openvdb::tools::copyToDense(*grid, dense);
+
+    py::array_t<float> arr({shape[0], shape[1], shape[2]}, dense.data());
+    return arr;
+}
 
 PYBIND11_MODULE(vdbfusion_pybind, m) {
     auto vector3dvector = pybind_eigen_vector_of_vector<Eigen::Vector3d>(
@@ -123,11 +136,20 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
         .def("_extract_triangle_mesh", &VDBVolume::ExtractTriangleMesh, "fill_holes"_a,
              "min_weight"_a)
         .def(
-            "_extract_vdb_grids",
+            "_write_vdb_grids",
             [](const VDBVolume& self, const std::string& filename) {
                 openvdb::io::File(filename).write({self.tsdf_, self.weights_});
             },
             "filename"_a)
+        // .def(
+        //     "_read_vdb_grids",
+        //     [](const VDBVolume& self, const std::string& filename) {
+        //         self.tsdf_ = openvdb::io::File(filename).readGrid("D(x): signed distance grid");
+        //         self.weights_ = openvdb::io::File(filename).readGrid("W(x): weights grid");
+        //         self_colors_ = openvdb::io::File(filename).readGrid("C(x): colors grid");
+        //     },
+        //     "filename"_a)
+        .def("get_tsdf", [](VDBVolume& self) { return ToNumpy(self.tsdf_); })
 #ifndef PYOPENVDB_SUPPORT
         .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return false; })
 #else
