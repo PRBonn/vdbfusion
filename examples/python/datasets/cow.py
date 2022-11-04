@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# Original implementation by Federico Magistri
+# Download the data from https://www.ipb.uni-bonn.de/html/software/vdbfusion/cow_and_lady_dataset.zip
+# For more detailed information on this dataset please check https://github.com/PRBonn/vdbfusion_ros/issues/2
+
 import glob
 import os
 import sys
-from typing import Dict
 
 import numpy as np
 import open3d as o3d
@@ -34,7 +35,7 @@ class CowDataset:
 
     @staticmethod
     def read_gt_list(filename):
-        poses = np.loadtxt(filename, delimiter=",")
+        poses = np.loadtxt(filename, delimiter=" ")
         return poses.reshape((len(poses), 4, 4))
 
     def __getitem__(self, idx):
