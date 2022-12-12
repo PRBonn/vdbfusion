@@ -5,7 +5,7 @@
 # Copyright (c) 2021 Ignacio Vizzo, all rights reserved
 import argh
 
-from datasets import NUSCENESDataset as Dataset
+from datasets import NuScenesDataset as Dataset
 from vdbfusion_pipeline import VDBFusionPipeline as Pipeline
 
 

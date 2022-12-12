@@ -26,6 +26,6 @@ from .cow import CowDataset
 from .icl import ICLDataset
 from .kitti_odometry import KITTIOdometryDataset
 from .newer_college import NewerCollegeDataset
-from .nuscenes import NUSCENESDataset
+from .nuscenes import NuScenesDataset
 from .scannet import ScanNet
 from .tum import TUMDataset
