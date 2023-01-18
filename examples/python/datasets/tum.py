@@ -73,7 +73,6 @@ class TUMDataset:
         potential_matches = [
             (abs(a - (b + self.offset)), a, b)
             for a in first_keys.keys()
-            for a in first_keys.keys()
             for b in second_keys.keys()
             if abs(a - (b + self.offset)) < self.max_difference
         ]
