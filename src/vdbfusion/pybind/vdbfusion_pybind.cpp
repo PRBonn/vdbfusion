@@ -38,8 +38,7 @@ py::array_t<float> ToNumpy(openvdb::FloatGrid::Ptr grid) {
     openvdb::tools::Dense<float, openvdb::tools::LayoutZYX> dense(bbox);
     openvdb::tools::copyToDense(*grid, dense);
 
-    py::array_t<float> arr({shape[0], shape[1], shape[2]}, dense.data());
-    return arr;
+    return py::array_t<float>({shape[0], shape[1], shape[2]}, dense.data());
 }
 
 PYBIND11_MODULE(vdbfusion_pybind, m) {
@@ -150,6 +149,7 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
         //     },
         //     "filename"_a)
         .def("get_tsdf", [](VDBVolume& self) { return ToNumpy(self.tsdf_); })
+        .def("get_weights", [](VDBVolume& self) { return ToNumpy(self.weights_); })
 #ifndef PYOPENVDB_SUPPORT
         .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return false; })
 #else
