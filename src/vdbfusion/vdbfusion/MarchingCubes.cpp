@@ -8,6 +8,7 @@
 
 #include "MarchingCubesConst.h"
 #include "VDBVolume.h"
+#include "Colors.h"
 
 namespace openvdb {
 static const openvdb::Coord shift[8] = {
@@ -51,7 +52,7 @@ int GetCubeIndex(const openvdb::Coord& voxel,
                  Accessor<Y>& tsdf_acc,
                  Accessor<C>& colors_acc,
                  float* vertex_tsdf,
-                 openvdb::math::Vec3<double>* colors) {
+                 openvdb::Vec3f* colors) {
     int cube_index = 0;
     // Iterate through all the 8 neighbour vertices...
     for (int vertex = 0; vertex < 8; vertex++) {
@@ -68,9 +69,6 @@ int GetCubeIndex(const openvdb::Coord& voxel,
         }
         vertex_tsdf[vertex] = tsdf_acc.getValue(idx);
         colors[vertex] = colors_acc.getValue(idx);
-        colors[vertex][0] = (double)colors[vertex][0] / 255.0;
-        colors[vertex][1] = (double)colors[vertex][1] / 255.0;
-        colors[vertex][2] = (double)colors[vertex][2] / 255.0;
         if (vertex_tsdf[vertex] < 0.0f) {
             cube_index |= (1 << vertex);
         }
@@ -97,7 +95,7 @@ VDBVolume::ExtractTriangleMesh(bool fill_holes, float min_weight) const {
     auto weights_acc = weights_->getAccessor();
     for (auto iter = tsdf_->beginValueOn(); iter; ++iter) {
         float vertex_tsdf[8];
-        openvdb::math::Vec3<double> colors_field[8];
+        openvdb::Vec3f colors_field[8];
         const openvdb::Coord& voxel = iter.getCoord();
         const int32_t x = voxel.x();
         const int32_t y = voxel.y();
@@ -130,10 +128,10 @@ VDBVolume::ExtractTriangleMesh(bool fill_holes, float min_weight) const {
                     const auto& source_color = colors_field[edge_to_vert[edge][SOURCE]];
                     const auto& destination_color = colors_field[edge_to_vert[edge][DEST]];
 
+                    openvdb::Vec3f current_color = BlendColors(
+                        source_color, destination_tsdf, destination_color, source_tsdf
+                    );
                     Eigen::Vector3d color;
-                    openvdb::math::Vec3<double> current_color =
-                        (destination_tsdf * source_color + source_tsdf * destination_color) /
-                        (source_tsdf + destination_tsdf);
                     color[0] = current_color[0];
                     color[1] = current_color[1];
                     color[2] = current_color[2];

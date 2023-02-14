@@ -1,4 +1,5 @@
 #include "VDBVolume.h"
+#include "Colors.h"
 
 // OpenVDB
 #include <openvdb/Types.h>
@@ -33,21 +34,6 @@ Eigen::Vector3d GetVoxelCenter(const openvdb::Coord& voxel, const openvdb::math:
     return Eigen::Vector3d(v_wf.x(), v_wf.y(), v_wf.z());
 }
 
-openvdb::Vec3i BlendColors(const openvdb::Vec3i& color1,
-                           float weight1,
-                           const openvdb::Vec3i& color2,
-                           float weight2,
-                           double gamma=2.2) {
-    float weight_sum = weight1 + weight2;
-    weight1 /= weight_sum;
-    weight2 /= weight_sum;
-    return {
-        static_cast<int>(round(pow(pow(color1[0], gamma) * weight1 + pow(color2[0], gamma) * weight2, 1./gamma))),
-        static_cast<int>(round(pow(pow(color1[1], gamma) * weight1 + pow(color2[1], gamma) * weight2, 1./gamma))),
-        static_cast<int>(round(pow(pow(color1[2], gamma) * weight1 + pow(color2[2], gamma) * weight2, 1./gamma)))
-    };
-}
-
 }  // namespace
 
 namespace vdbfusion {
@@ -66,7 +52,7 @@ VDBVolume::VDBVolume(float voxel_size, float sdf_trunc, bool space_carving /* = 
     weights_->setTransform(openvdb::math::Transform::createLinearTransform(voxel_size_));
     weights_->setGridClass(openvdb::GRID_UNKNOWN);
 
-    colors_ = openvdb::Vec3IGrid::create(openvdb::Vec3I(0.0f, 0.0f, 0.0f));
+    colors_ = openvdb::Vec3SGrid::create(openvdb::Vec3f(0.0f, 0.0f, 0.0f));
     colors_->setName("C(x): colors grid");
     colors_->setTransform(openvdb::math::Transform::createLinearTransform(voxel_size_));
     colors_->setGridClass(openvdb::GRID_UNKNOWN);
@@ -152,10 +138,17 @@ void VDBVolume::Integrate(const std::vector<Eigen::Vector3d>& points,
                 tsdf_acc.setValue(voxel, new_tsdf);
                 weights_acc.setValue(voxel, new_weight);
                 if (has_colors) {
-                    const auto pts_color = openvdb::Vec3i(int(colors[i][0]), int(colors[i][1]), int(colors[i][2]));
-                    const auto color = colors_acc.getValue(voxel);
-                    const auto new_color = BlendColors(color, last_weight, pts_color, weight);
-                    colors_acc.setValue(voxel, new_color);
+                    const auto pts_color = openvdb::Vec3f(colors[i][0], colors[i][1], colors[i][2]);
+                    if(pts_color.isFinite()){ // no nan or infs
+                        auto new_color = pts_color; // default is current color
+                        auto color = openvdb::Vec3f(0.0f, 0.0f, 0.0f);
+                        if(colors_acc.probeValue(voxel, color)){ // only blend if active
+                            new_color = BlendColors(
+                                const_cast<const openvdb::Vec3f&>(color), last_weight, pts_color, weight
+                            );
+                        }
+                        colors_acc.setValue(voxel, new_color);
+                    }
                 }
             }
         } while (dda.step());
