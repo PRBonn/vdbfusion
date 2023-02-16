@@ -40,10 +40,10 @@
 #include "pyopenvdb.h"
 #endif
 
+#include <openvdb/tools/Dense.h>
+
 #include "stl_vector_eigen.h"
 #include "vdbfusion/VDBVolume.h"
-
-#include <openvdb/tools/Dense.h>
 
 PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3d>);
 PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3i>);
@@ -83,44 +83,14 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
         // TODO: add support for this
         .def("_integrate",
              py::overload_cast<const std::vector<Eigen::Vector3d>&,
-                               const std::vector<Eigen::Vector3d>&,
-                               const Eigen::Matrix4d&,
+                               const std::vector<Eigen::Vector3d>&, const Eigen::Matrix4d&,
                                const std::function<float(float)>&>(&VDBVolume::Integrate),
              "points"_a, "colors"_a, "extrinsic"_a, "weighting_function"_a)
         .def("_integrate",
              py::overload_cast<const std::vector<Eigen::Vector3d>&,
-                               const std::vector<Eigen::Vector3d>&,
-                               const Eigen::Vector3d&,
+                               const std::vector<Eigen::Vector3d>&, const Eigen::Vector3d&,
                                const std::function<float(float)>&>(&VDBVolume::Integrate),
              "points"_a, "colors"_a, "origin"_a, "weighting_function"_a)
-        // .def(
-        //     "_integrate",
-        //     [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
-        //        const Eigen::Vector3d& origin) {
-        //         self.Integrate(points, origin, [](float /*sdf*/) { return 1.0f; });
-        //     },
-        //     "points"_a, "origin"_a)
-        // .def(
-        //     "_integrate",
-        //     [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
-        //        const Eigen::Vector3d& origin, float weight) {
-        //         self.Integrate(points, origin, [=](float /*sdf*/) { return weight; });
-        //     },
-        //     "points"_a, "origin"_a, "weight"_a)
-        // .def(
-        //     "_integrate",
-        //     [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
-        //        const Eigen::Matrix4d& extrinsics) {
-        //         self.Integrate(points, extrinsics, [](float /*sdf*/) { return 1.0f; });
-        //     },
-        //     "points"_a, "extrinsic"_a)
-        // .def(
-        //     "_integrate",
-        //     [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
-        //        const Eigen::Matrix4d& extrinsics, float weight) {
-        //         self.Integrate(points, extrinsics, [=](float /*sdf*/) { return weight; });
-        //     },
-        //     "points"_a, "origin"_a, "weight"_a)
 #ifdef PYOPENVDB_SUPPORT
         .def("_integrate",
              py::overload_cast<openvdb::FloatGrid::Ptr, const std::function<float(float)>&>(

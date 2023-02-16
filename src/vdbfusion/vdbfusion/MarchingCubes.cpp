@@ -25,9 +25,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Colors.h"
 #include "MarchingCubesConst.h"
 #include "VDBVolume.h"
-#include "Colors.h"
 
 namespace openvdb {
 static const openvdb::Coord shift[8] = {
@@ -146,10 +146,8 @@ VDBVolume::ExtractTriangleMesh(bool fill_holes, float min_weight) const {
                     vertices.push_back(point /* + origin_*/);
                     const auto& source_color = colors_field[edge_to_vert[edge][SOURCE]];
                     const auto& destination_color = colors_field[edge_to_vert[edge][DEST]];
-
-                    openvdb::Vec3f current_color = BlendColors(
-                        source_color, destination_tsdf, destination_color, source_tsdf
-                    );
+                    openvdb::Vec3f current_color =
+                        BlendColors(source_color, destination_tsdf, destination_color, source_tsdf);
                     Eigen::Vector3d color;
                     color[0] = current_color[0];
                     color[1] = current_color[1];

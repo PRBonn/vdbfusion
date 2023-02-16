@@ -65,14 +65,6 @@ class VDBVolume:
     ) -> None:
         ...
 
-    # @overload
-    # def integrate(self, points: np.ndarray, extrinsic: np.ndarray, weight: float) -> None:
-    #     ...
-
-    # @overload
-    # def integrate(self, points: np.ndarray, extrinsic: np.ndarray) -> None:
-    #     ...
-
     @overload
     def integrate(self, grid, weighting_function: Callable[[float], float]) -> None:
         ...

@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include "VDBVolume.h"
+
 #include "Colors.h"
 
 // OpenVDB
@@ -161,13 +162,12 @@ void VDBVolume::Integrate(const std::vector<Eigen::Vector3d>& points,
                 weights_acc.setValue(voxel, new_weight);
                 if (has_colors) {
                     const auto pts_color = openvdb::Vec3f(colors[i][0], colors[i][1], colors[i][2]);
-                    if(pts_color.isFinite()){ // no nan or infs
-                        auto new_color = pts_color; // default is current color
+                    if (pts_color.isFinite()) {      // no nan or infs
+                        auto new_color = pts_color;  // default is current color
                         auto color = openvdb::Vec3f(0.0f, 0.0f, 0.0f);
-                        if(colors_acc.probeValue(voxel, color)){ // only blend if active
-                            new_color = BlendColors(
-                                const_cast<const openvdb::Vec3f&>(color), last_weight, pts_color, weight
-                            );
+                        if (colors_acc.probeValue(voxel, color)) {  // only blend if active
+                            new_color = BlendColors(const_cast<const openvdb::Vec3f&>(color),
+                                                    last_weight, pts_color, weight);
                         }
                         colors_acc.setValue(voxel, new_color);
                     }
