@@ -132,14 +132,6 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
                 openvdb::io::File(filename).write({self.tsdf_, self.weights_});
             },
             "filename"_a)
-        // .def(
-        //     "_read_vdb_grids",
-        //     [](const VDBVolume& self, const std::string& filename) {
-        //         self.tsdf_ = openvdb::io::File(filename).readGrid("D(x): signed distance grid");
-        //         self.weights_ = openvdb::io::File(filename).readGrid("W(x): weights grid");
-        //         self_colors_ = openvdb::io::File(filename).readGrid("C(x): colors grid");
-        //     },
-        //     "filename"_a)
         .def("get_tsdf", [](VDBVolume& self) { return ToNumpy(self.tsdf_); })
         .def("get_weights", [](VDBVolume& self) { return ToNumpy(self.weights_); })
 #ifndef PYOPENVDB_SUPPORT

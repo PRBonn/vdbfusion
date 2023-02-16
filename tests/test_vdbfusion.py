@@ -46,9 +46,9 @@ class VDBFusionTest(unittest.TestCase):
         """We can't check nothing meaningfull from the python side, so move on."""
         self.tsdf_volume.integrate(points=self.points, extrinsic=self.pose)
 
-    def test_extract_tirangle_mesh(self) -> None:
+    def test_extract_triangle_mesh(self) -> None:
         self.tsdf_volume.integrate(points=self.points, extrinsic=self.pose)
-        vertices, triangles = self.tsdf_volume.extract_triangle_mesh()
+        vertices, triangles, _ = self.tsdf_volume.extract_triangle_mesh()
         # We can't see what's inside, but at least should be not None objects
         self.assertIsNotNone(vertices)
         self.assertIsNotNone(triangles)
