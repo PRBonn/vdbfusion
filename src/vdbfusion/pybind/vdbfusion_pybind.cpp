@@ -75,7 +75,7 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
         m, "_VDBVolume",
         "This is the low level C++ bindings, all the methods and "
         "constructor defined within this module (starting with a ``_`` "
-        "should not be used. Please reffer to the python Procesor class to "
+        "should not be used. Please refer to the python Processor class to "
         "check how to use the API");
     vdb_volume
         .def(py::init<float, float, bool>(), "voxel_size"_a, "sdf_trunc"_a,
@@ -83,14 +83,25 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
         // TODO: add support for this
         .def("_integrate",
              py::overload_cast<const std::vector<Eigen::Vector3d>&,
-                               const std::vector<Eigen::Vector3d>&, const Eigen::Matrix4d&,
-                               const std::function<float(float)>&>(&VDBVolume::Integrate),
-             "points"_a, "colors"_a, "extrinsic"_a, "weighting_function"_a)
-        .def("_integrate",
-             py::overload_cast<const std::vector<Eigen::Vector3d>&,
-                               const std::vector<Eigen::Vector3d>&, const Eigen::Vector3d&,
+                               const std::vector<Eigen::Vector3d>&,
+                               const Eigen::Vector3d&,
                                const std::function<float(float)>&>(&VDBVolume::Integrate),
              "points"_a, "colors"_a, "origin"_a, "weighting_function"_a)
+        .def(
+            "_integrate",
+            [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
+               const std::vector<Eigen::Vector3d>& colors,
+               const Eigen::Vector3d& origin, float weight) {
+                self.Integrate(points, colors, origin, [=](float /*sdf*/) { return weight; });
+            },
+            "points"_a, "colors"_a, "origin"_a, "weight"_a)
+        .def("_integrate",
+            [](VDBVolume& self, const std::vector<Eigen::Vector3d>& points,
+               const std::vector<Eigen::Vector3d>& colors,
+               const Eigen::Vector3d& origin) {
+                self.Integrate(points, colors, origin, [](float /*sdf*/) { return 1.0f; });
+            },
+            "points"_a, "colors"_a, "origin"_a)
 #ifdef PYOPENVDB_SUPPORT
         .def("_integrate",
              py::overload_cast<openvdb::FloatGrid::Ptr, const std::function<float(float)>&>(

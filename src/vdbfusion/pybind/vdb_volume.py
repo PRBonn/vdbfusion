@@ -103,10 +103,11 @@ class VDBVolume:
             assert points.dtype == np.float64, "points dtype must be np.float64"
             assert isinstance(extrinsic, np.ndarray), "origin/extrinsic must by np.ndarray"
             assert extrinsic.dtype == np.float64, "origin/extrinsic dtype must be np.float64"
+            if extrinsic.shape == (4, 4):
+                extrinsic = extrinsic[:, :4].copy()
             assert extrinsic.shape in [
                 (3,),
                 (3, 1),
-                (4, 4),
             ], "origin/extrinsic must be a (3,) array or a (4,4) matrix"
 
             _points = vdbfusion_pybind._VectorEigen3d(points)
@@ -115,12 +116,10 @@ class VDBVolume:
             else:
                 _colors = vdbfusion_pybind._VectorEigen3d(np.zeros((0, 3), dtype=np.float64))
             if weighting_function is not None:
-                _weighting_function = weighting_function
-            elif weight is not None:
-                _weighting_function = lambda x: weight
-            else:
-                _weighting_function = lambda x: 1.0
-            self._volume._integrate(_points, _colors, extrinsic, _weighting_function)
+                return self._volume._integrate(_points, _colors, extrinsic, weighting_function)
+            if weight is not None:
+                return self._volume._integrate(_points, _colors, extrinsic, weight)
+            return self._volume._integrate(_points, _colors, extrinsic)
 
     @overload
     def update_tsdf(

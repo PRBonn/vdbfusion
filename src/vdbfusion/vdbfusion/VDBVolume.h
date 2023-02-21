@@ -46,7 +46,7 @@ public:
                    const std::function<float(float)>& weighting_function);
 
     /// @brief Integrates a new (globally aligned) PointCloud into the current
-    /// tsdf_ volume.
+    /// tsdf_ volume. Not used by python, but useful for C++ projects.
     void inline Integrate(const std::vector<Eigen::Vector3d>& points,
                           const std::vector<Eigen::Vector3d>& colors,
                           const Eigen::Matrix4d& extrinsics,
