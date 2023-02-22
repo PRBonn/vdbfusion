@@ -104,7 +104,7 @@ class VDBVolume:
             assert isinstance(extrinsic, np.ndarray), "origin/extrinsic must by np.ndarray"
             assert extrinsic.dtype == np.float64, "origin/extrinsic dtype must be np.float64"
             if extrinsic.shape == (4, 4):
-                extrinsic = extrinsic[3, :3].copy()
+                extrinsic = extrinsic[:3, 3].copy()
             assert extrinsic.shape in [
                 (3,),
                 (3, 1),
