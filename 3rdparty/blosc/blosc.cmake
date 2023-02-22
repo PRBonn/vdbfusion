@@ -24,8 +24,8 @@ include(ExternalProject)
 ExternalProject_Add(
   external_blosc
   PREFIX blosc
-  URL https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.2.tar.gz
-  URL_HASH SHA256=e5b4ddb4403cbbad7aab6e9ff55762ef298729c8a793c6147160c771959ea2aa
+  URL https://github.com/Blosc/c-blosc/archive/refs/tags/v1.17.0.tar.gz
+  URL_HASH SHA256=75d98c752b8cf0d4a6380a3089d56523f175b0afa2d0cf724a1bd0a1a8f975a4
   UPDATE_COMMAND ""
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
              ${ExternalProject_CMAKE_ARGS}
