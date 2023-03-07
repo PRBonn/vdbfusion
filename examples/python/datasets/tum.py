@@ -58,7 +58,7 @@ class TUMDataset:
             (
                 np.subtract.outer(
                     gt_list[:, 0].astype(np.float64),
-                    self.depth_frames[:, 1].astype(np.float64),
+                    self.depth_frames[:, 0].astype(np.float64),
                 )
             )
         ).argmin(0)
