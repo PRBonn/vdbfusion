@@ -171,3 +171,17 @@ class VDBVolume:
         This function is ideal to cleanup the TSDF grid:D(x) before exporting it.
         """
         return self._volume._prune(min_weight)
+
+    def get_tsdf(self):
+        """Return the tsdf as a numpy array.
+
+        Note: For large volumes this might not fit in memory.
+        """
+        return self._volume.get_tsdf()
+
+    def get_weights(self):
+        """Return the weights as a numpy array.
+
+        Note: For large volumes this might not fit in memory.
+        """
+        return self._volume.get_weights()
