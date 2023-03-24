@@ -63,6 +63,21 @@ py::array_t<float> ToNumpy(openvdb::FloatGrid::Ptr grid) {
     return py::array_t<float>({shape[0], shape[1], shape[2]}, dense.data());
 }
 
+py::array_t<float> GetBBox(openvdb::FloatGrid::Ptr grid) {
+    openvdb::CoordBBox bbox = grid->evalActiveVoxelBoundingBox();
+    openvdb::Coord min = bbox.min();
+    openvdb::Coord max = bbox.max();
+    py::array_t<float> extremas({3, 2});
+    auto r = extremas.mutable_unchecked<2>();
+    r(0, 0) = min[0];
+    r(1, 0) = min[1];
+    r(2, 0) = min[2];
+    r(0, 0) = max[0];
+    r(0, 1) = max[1];
+    r(0, 2) = max[2];
+    return extremas;
+}
+
 PYBIND11_MODULE(vdbfusion_pybind, m) {
     auto vector3dvector = pybind_eigen_vector_of_vector<Eigen::Vector3d>(
         m, "_VectorEigen3d", "std::vector<Eigen::Vector3d>",
@@ -143,8 +158,8 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
                 openvdb::io::File(filename).write({self.tsdf_, self.weights_});
             },
             "filename"_a)
-        .def("get_tsdf", [](VDBVolume& self) { return ToNumpy(self.tsdf_); })
-        .def("get_weights", [](VDBVolume& self) { return ToNumpy(self.weights_); })
+        .def("get_tsdf", [](VDBVolume& self) { return py::make_tuple(ToNumpy(self.tsdf_), GetBBox(self.tsdf_)); })
+        .def("get_weights", [](VDBVolume& self) { return py::make_tuple(ToNumpy(self.weights_), GetBBox(self.weights_)); })
 #ifndef PYOPENVDB_SUPPORT
         .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return false; })
 #else
