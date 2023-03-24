@@ -72,9 +72,9 @@ py::array_t<float> GetBBox(openvdb::FloatGrid::Ptr grid) {
     r(0, 0) = min[0];
     r(1, 0) = min[1];
     r(2, 0) = min[2];
-    r(0, 0) = max[0];
-    r(0, 1) = max[1];
-    r(0, 2) = max[2];
+    r(0, 1) = max[0];
+    r(1, 1) = max[1];
+    r(2, 1) = max[2];
     return extremas;
 }
 
