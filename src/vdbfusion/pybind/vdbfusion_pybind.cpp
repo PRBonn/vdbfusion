@@ -65,8 +65,8 @@ py::array_t<float> ToNumpy(openvdb::FloatGrid::Ptr grid) {
 
 py::array_t<float> GetBBox(openvdb::FloatGrid::Ptr grid) {
     openvdb::CoordBBox bbox = grid->evalActiveVoxelBoundingBox();
-    openvdb::Coord min = bbox.min();
-    openvdb::Coord max = bbox.max();
+    openvdb::Vec3d min = grid->indexToWorld(bbox.min());
+    openvdb::Vec3d max = grid->indexToWorld(bbox.max());
     py::array_t<float> extremas({3, 2});
     auto r = extremas.mutable_unchecked<2>();
     r(0, 0) = min[0];
