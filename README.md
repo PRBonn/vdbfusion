@@ -2,7 +2,7 @@
 
 [![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=flat-square&logo=c%2B%2B&logoColor=white)](./src/vdbfusion/vdbfusion)
 [![Python](https://img.shields.io/badge/python-3670A0?style=flat-square&logo=python&logoColor=ffdd54)](src/vdbfusion/pybind)
-[![Linux](https://svgshare.com/i/Zhy.svg?style=flat-square)](https://svgshare.com/i/Zhy.svg)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://svgshare.com/i/Zhy.svg)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/vdbfusion.svg?style=flat-square)](https://pypi.python.org/pypi/vdbfusion/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/PRBonn/vdbfusion/pulls)
 [![Paper](https://img.shields.io/badge/paper-get-<COLOR>.svg?style=flat-square)](https://www.ipb.uni-bonn.de/wp-content/papercite-data/pdf/vizzo2022sensors.pdf)
