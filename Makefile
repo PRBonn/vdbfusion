@@ -22,8 +22,8 @@
 .PHONY: install docker cpp
 
 cpp:
-	@cmake -B build . -DUSE_SYSTEM_EIGEN3=OFF
-	@cmake --build build --config Release -j36 
+	@cmake -G Ninja -B build . -DUSE_SYSTEM_EIGEN3=OFF
+	@cmake --build build --config Release
 
 install:
 	pip3 -v install . && cp build/*/compile_commands.json build/
