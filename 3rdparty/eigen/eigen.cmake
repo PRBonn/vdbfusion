@@ -20,49 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-include(ExternalProject)
+set(EIGEN_BUILD_DOC OFF CACHE BOOL "Don't build Eigen docs")
+set(EIGEN_BUILD_TESTING OFF CACHE BOOL "Don't build Eigen tests")
+set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "Don't build Eigen pkg-config")
+set(EIGEN_BUILD_BLAS OFF CACHE BOOL "Don't build blas module")
+set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "Don't build lapack module")
 
-ExternalProject_Add(
-  external_eigen
-  PREFIX eigen
-  URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
-  URL_HASH SHA256=b4c198460eba6f28d34894e3a5710998818515104d6e74e5cc331ce31e46e626
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND "")
-
-ExternalProject_Get_Property(external_eigen SOURCE_DIR)
-add_library(libEigenHelper INTERFACE)
-add_dependencies(libEigenHelper external_eigen)
-target_include_directories(libEigenHelper SYSTEM INTERFACE $<BUILD_INTERFACE:${SOURCE_DIR}>)
-set_property(TARGET libEigenHelper PROPERTY EXPORT_NAME Eigen3::Eigen)
-add_library(Eigen3::Eigen ALIAS libEigenHelper)
-
-# set(EIGEN_BUILD_DOC OFF CACHE BOOL "Don't build Eigen docs")
-# set(EIGEN_BUILD_TESTING OFF CACHE BOOL "Don't build Eigen tests")
-# set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "Don't build Eigen pkg-config")
-# set(EIGEN_BUILD_BLAS OFF CACHE BOOL "Don't build blas module")
-# set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "Don't build lapack module")
-
-# include(FetchContent)
-# FetchContent_Declare(eigen URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2)
-# if(NOT eigen_POPULATED)
-#   FetchContent_Populate(eigen)
-#   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-#     add_subdirectory(${eigen_SOURCE_DIR} ${eigen_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
-#   else()
-#   # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
-#   # consider this 3rdparty headers as source code and fail due the -Werror flag.
-#   add_subdirectory(${eigen_SOURCE_DIR} ${eigen_BINARY_DIR} EXCLUDE_FROM_ALL)
-#   get_target_property(eigen_include_dirs eigen INTERFACE_INCLUDE_DIRECTORIES)
-#   set_target_properties(eigen PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${eigen_include_dirs}")
-#   endif()
-# endif()
-
-# add_library(libEigenHelper INTERFACE)
-# add_dependencies(libEigenHelper eigen)
-# target_include_directories(libEigenHelper SYSTEM INTERFACE $<BUILD_INTERFACE:${eigen_SOURCE_DIR}>)
-# set_property(TARGET libEigenHelper PROPERTY EXPORT_NAME Eigen3::Eigen)
-# add_library(Eigen3::Eigen ALIAS libEigenHelper)
-
+include(FetchContent)
+FetchContent_Declare(eigen URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2)
+if(NOT eigen_POPULATED)
+  FetchContent_Populate(eigen)
+  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+    add_subdirectory(${eigen_SOURCE_DIR} ${eigen_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+  else()
+  # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
+  # consider this 3rdparty headers as source code and fail due the -Werror flag.
+  add_subdirectory(${eigen_SOURCE_DIR} ${eigen_BINARY_DIR} EXCLUDE_FROM_ALL)
+  get_target_property(eigen_include_dirs eigen INTERFACE_INCLUDE_DIRECTORIES)
+  set_target_properties(eigen PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${eigen_include_dirs}")
+  endif()
+endif()
