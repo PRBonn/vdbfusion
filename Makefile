@@ -19,13 +19,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+.PHONY: install docker cpp
 
-.PHONY:cpp
 cpp:
-	cmake -G Ninja -Bbuild . -DUSE_SYSTEM_EIGEN3=OFF
-	cmake --build build --config Release
+	@cmake -B build . -DUSE_SYSTEM_EIGEN3=OFF
+	@cmake --build build --config Release -j36 
 
-.PHONY: install docker
 install:
 	pip3 -v install . && cp build/*/compile_commands.json build/
 
