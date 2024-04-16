@@ -1,6 +1,7 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Luca Lobefaro, Meher Malladi, Ignacio Vizzo, Cyrill
+# Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +23,6 @@
 
 include(FetchContent)
 FetchContent_Declare(
-  ext_pybind11
-  PREFIX pybind11
-  #TODO: Update to a release when this gets merged: https://github.com/pybind/pybind11/pull/3743
-  GIT_REPOSITORY https://github.com/pybind/pybind11
-  GIT_TAG master
-  GIT_SHALLOW ON)
-
-FetchContent_MakeAvailable(ext_pybind11)
+  pybind11
+  URL https://github.com/pybind/pybind11/archive/refs/tags/v2.12.0.tar.gz)
+FetchContent_MakeAvailable(pybind11)
