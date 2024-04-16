@@ -1,6 +1,6 @@
 # MIT License
 #
-# # Copyright (c) 2022 Luca Lobefaro, Meher Malladi, Ignacio Vizzo, Cyrill
+# Copyright (c) 2022 Luca Lobefaro, Meher Malladi, Ignacio Vizzo, Cyrill
 # Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
