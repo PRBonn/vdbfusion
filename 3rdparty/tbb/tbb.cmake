@@ -1,6 +1,7 @@
 # MIT License
 #
-# Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Meher Malladi, Luca Lobefaro, Ignacio Vizzo, Cyrill
+# Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,68 +21,66 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# include(ExternalProject)
-# ExternalProject_Add(
-#   external_tbb
-#   PREFIX tbb
-#   URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.4.1.tar.gz
-#   UPDATE_COMMAND ""
-#   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-#              ${ExternalProject_CMAKE_ARGS}
-#              ${ExternalProject_CMAKE_CXX_FLAGS}
-#              # custom flags
-#              -DBUILD_SHARED_LIBS=OFF
-#              -DTBB_TEST=OFF)
-
-# # Simulate importing TBB::tbb for OpenVDBHelper target
-# ExternalProject_Get_Property(external_tbb INSTALL_DIR)
-# set(TBB_ROOT ${INSTALL_DIR} CACHE INTERNAL "TBB_ROOT Install directory")
-# add_library(TBBHelper INTERFACE)
-# add_dependencies(TBBHelper external_tbb)
-# target_include_directories(TBBHelper INTERFACE ${INSTALL_DIR}/include)
-# target_link_directories(TBBHelper INTERFACE ${INSTALL_DIR}/lib)
-# target_link_libraries(TBBHelper INTERFACE tbb)
-# add_library(TBB::tbb ALIAS TBBHelper)
-
-function(print_all_targets DIR)
-    get_property(TGTS DIRECTORY "${DIR}" PROPERTY BUILDSYSTEM_TARGETS)
-    foreach(TGT IN LISTS TGTS)
-        message(STATUS "Target: ${TGT}")
-        # TODO: Do something about it
-    endforeach()
-
-    get_property(SUBDIRS DIRECTORY "${DIR}" PROPERTY SUBDIRECTORIES)
-    foreach(SUBDIR IN LISTS SUBDIRS)
-        print_all_targets("${SUBDIR}")
-    endforeach()
-endfunction()
-
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "TBB Shared")
-set(TBBMALLOC_BUILD OFF CACHE BOOL "TBB Malloc")
-set(TBB_EXAMPLES OFF CACHE BOOL "TBB Examples")
-set(TBB_STRICT OFF CACHE BOOL "TBB Stric")
-set(TBB_TEST OFF CACHE BOOL "TBB Test")
+set(BUILD_SHARED_LIBS
+    OFF
+    CACHE BOOL "TBB Shared")
+set(TBBMALLOC_BUILD
+    OFF
+    CACHE BOOL "TBB Malloc")
+set(TBB_EXAMPLES
+    OFF
+    CACHE BOOL "TBB Examples")
+set(TBB_STRICT
+    OFF
+    CACHE BOOL "TBB Stric")
+set(TBB_TEST
+    OFF
+    CACHE BOOL "TBB Test")
 
 include(FetchContent)
-FetchContent_Declare(tbb 
-  URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
-FetchContent_MakeAvailable(tbb)
-# if(NOT tbb_POPULATED)
-#   FetchContent_Populate(TBB)
-#   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-#     add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
-#   else()
-#     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
-#     # consider this 3rdparty headers as source code and fail due the -Werror flag.
-#     add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
-#     get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
-#     set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tbb_include_dirs}")
-#   endif()
-# endif()
-
-find_package(TBB REQUIRED)
-if(TARGET TBB::tbb)
-    message(FATAL_ERROR "exists")
+if(${CMAKE_VERSION} GREATER_EQUAL 3.24)
+  # version 3.24 introduces OVERRIDE_FIND_PACKAGE.
+  FetchContent_Declare(
+    tbb
+    URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz
+        OVERRIDE_FIND_PACKAGE)
 else()
-    message(FATAL_ERROR "not exists")
+  FetchContent_Declare(
+    tbb
+    URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
+endif()
+
+if(NOT tbb_POPULATED)
+  FetchContent_Populate(tbb)
+  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+    add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM
+                     EXCLUDE_FROM_ALL)
+  else()
+    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
+    # compiler will # consider this 3rdparty headers as source code and fail due
+    # the -Werror flag.
+    add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
+    get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                                         "${tbb_include_dirs}")
+    if(${CMAKE_VERSION} LESS 3.24)
+      # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24
+      file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
+
+      # dummy an empty config file. we add_subdirectory above anyways
+      file(WRITE "${CMAKE_BINARY_DIR}/fpRedirects/tbb-config.cmake" "")
+
+      # dummy a version file. same is done by OVERRIDE_FIND_PACKAGE by default
+      file(
+        WRITE "${CMAKE_BINARY_DIR}/fpRedirects/tbb-config-version.cmake"
+        "set(PACKAGE_VERSION_COMPATIBLE TRUE)
+      set(PACKAGE_VERSION_EXACT TRUE)
+      ")
+      # set the package dir for find_package calls downstream
+      set(TBB_DIR "${CMAKE_BINARY_DIR}/fpRedirects")
+      # prefer configs over module searches when find_packaging because of the
+      # redirection
+      set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+    endif()
+  endif()
 endif()
