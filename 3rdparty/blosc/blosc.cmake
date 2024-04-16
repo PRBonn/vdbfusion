@@ -1,6 +1,6 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Luca Lobefaro, Meher Malladi, Ignacio Vizzo, Cyrill Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,29 +19,22 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+set(BUILD_STATIC ON)
+set(BUILD_TESTS OFF)
+set(BUILD_BENCHMARKS OFF)
+set(PREFER_EXTERNAL_COMPLIBS OFF)
 
-include(ExternalProject)
-ExternalProject_Add(
-  external_blosc
-  PREFIX blosc
-  URL https://github.com/Blosc/c-blosc/archive/refs/tags/v1.5.0.tar.gz
-  URL_HASH SHA256=208ba4db0e5116421ed2fbbdf2adfa3e1d133d29a6324a0f47cf2d71f3810c92
-  UPDATE_COMMAND ""
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-             ${ExternalProject_CMAKE_ARGS}
-             ${ExternalProject_CMAKE_CXX_FLAGS}
-             # Custom OpenVDB build settings
-             -DBUILD_STATIC=ON
-             -DBUILD_TESTS=OFF
-             -DBUILD_BENCHMARKS=OFF
-             -DPREFER_EXTERNAL_COMPLIBS=OFF)
-
-# Simulate importing Blosc::blosc for OpenVDBHelper target
-ExternalProject_Get_Property(external_blosc INSTALL_DIR)
-set(BLOSC_ROOT ${INSTALL_DIR} CACHE INTERNAL "BLOSC_ROOT Install directory")
-add_library(BloscHelper INTERFACE)
-add_dependencies(BloscHelper external_blosc)
-target_include_directories(BloscHelper INTERFACE ${INSTALL_DIR}/include)
-target_link_directories(BloscHelper INTERFACE ${INSTALL_DIR}/lib)
-target_link_libraries(BloscHelper INTERFACE blosc.a)
-add_library(Blosc::blosc ALIAS BloscHelper)
+include(FetchContent)
+FetchContent_Declare(blosc URL https://github.com/Blosc/c-blosc/archive/refs/tags/v1.5.0.tar.gz)
+if(NOT blosc_POPULATED)
+  FetchContent_Populate(blosc)
+  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+    add_subdirectory(${blosc_SOURCE_DIR} ${blosc_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+  else()
+    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
+    # consider this 3rdparty headers as source code and fail due the -Werror flag.
+    add_subdirectory(${blosc_SOURCE_DIR} ${blosc_BINARY_DIR} EXCLUDE_FROM_ALL)
+    get_target_property(blosc_include_dirs blosc INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(blosc PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${blosc_include_dirs}")
+  endif()
+endif()
