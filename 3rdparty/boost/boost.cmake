@@ -20,6 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# set(BOOST_ENABLE_CMAKE ON)
+
+# include(FetchContent)
+# FetchContent_Declare(boost URL https://github.com/boostorg/boost/archive/refs/tags/boost-1.71.0.tar.gz)
+# if(NOT boost_POPULATED)
+#   FetchContent_Populate(boost)
+#   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+#     add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+#   else()
+#     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
+#     # consider this 3rdparty headers as source code and fail due the -Werror flag.
+#     add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} EXCLUDE_FROM_ALL)
+#     get_target_property(boost_include_dirs boost INTERFACE_INCLUDE_DIRECTORIES)
+#     set_target_properties(boost PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${boost_include_dirs}")
+#   endif()
+# endif()
+
 set(BOOST_URL "https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.bz2")
 set(BOOST_URL_SHA256 "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee")
 set(BOOST_CONFIGURE <SOURCE_DIR>/bootstrap.sh --with-libraries=iostreams,regex)
