@@ -43,23 +43,45 @@
 # target_link_libraries(TBBHelper INTERFACE tbb)
 # add_library(TBB::tbb ALIAS TBBHelper)
 
-option(BUILD_SHARED_LIBS OFF)
-option(TBBMALLOC_BUILD OFF)
-option(TBB_EXAMPLES OFF)
-option(TBB_STRICT OFF)
-option(TBB_TEST OFF)
+function(print_all_targets DIR)
+    get_property(TGTS DIRECTORY "${DIR}" PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(TGT IN LISTS TGTS)
+        message(STATUS "Target: ${TGT}")
+        # TODO: Do something about it
+    endforeach()
+
+    get_property(SUBDIRS DIRECTORY "${DIR}" PROPERTY SUBDIRECTORIES)
+    foreach(SUBDIR IN LISTS SUBDIRS)
+        print_all_targets("${SUBDIR}")
+    endforeach()
+endfunction()
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "TBB Shared")
+set(TBBMALLOC_BUILD OFF CACHE BOOL "TBB Malloc")
+set(TBB_EXAMPLES OFF CACHE BOOL "TBB Examples")
+set(TBB_STRICT OFF CACHE BOOL "TBB Stric")
+set(TBB_TEST OFF CACHE BOOL "TBB Test")
 
 include(FetchContent)
-FetchContent_Declare(tbb URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
-if(NOT tbb_POPULATED)
-  FetchContent_Populate(tbb)
-  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
-  else()
-    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
-    # consider this 3rdparty headers as source code and fail due the -Werror flag.
-    add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
-    get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
-    set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tbb_include_dirs}")
-  endif()
+FetchContent_Declare(tbb 
+  URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
+FetchContent_MakeAvailable(tbb)
+# if(NOT tbb_POPULATED)
+#   FetchContent_Populate(TBB)
+#   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+#     add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+#   else()
+#     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
+#     # consider this 3rdparty headers as source code and fail due the -Werror flag.
+#     add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
+#     get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
+#     set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tbb_include_dirs}")
+#   endif()
+# endif()
+
+find_package(TBB REQUIRED)
+if(TARGET TBB::tbb)
+    message(FATAL_ERROR "exists")
+else()
+    message(FATAL_ERROR "not exists")
 endif()

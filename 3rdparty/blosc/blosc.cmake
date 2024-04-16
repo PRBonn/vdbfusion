@@ -21,19 +21,19 @@
 # SOFTWARE.
 set(BUILD_STATIC
     ON
-    CACHE BOOL "static build")
+    CACHE BOOL "BLOSC static build")
 set(BUILD_SHARED
     OFF
-    CACHE BOOL "static build")
+    CACHE BOOL "BLOSC static build")
 set(BUILD_TESTS
     OFF
-    CACHE BOOL "tests")
+    CACHE BOOL "BLOSC tests")
 set(BUILD_BENCHMARKS
     OFF
-    CACHE BOOL "benchmarks")
+    CACHE BOOL "BLOSC benchmarks")
 set(PREFER_EXTERNAL_COMPLIBS
     OFF
-    CACHE BOOL "external_complibs")
+    CACHE BOOL "BLOSC external_complibs")
 
 include(FetchContent)
 FetchContent_Declare(

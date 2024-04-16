@@ -21,8 +21,12 @@
 # SOFTWARE.
 .PHONY: install docker cpp
 
-cpp:
-	@cmake -G Ninja -B build . -DUSE_SYSTEM_EIGEN3=OFF
+cpp_ninja:
+	@cmake -G Ninja -B build .
+	@cmake --build build --config Release
+
+cpp_make:
+	@cmake -B build .
 	@cmake --build build --config Release
 
 install:
