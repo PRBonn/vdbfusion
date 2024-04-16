@@ -38,49 +38,44 @@ set(TBB_TEST
     CACHE BOOL "TBB Test")
 
 include(FetchContent)
-if(${CMAKE_VERSION} GREATER_EQUAL 3.24)
-  # version 3.24 introduces OVERRIDE_FIND_PACKAGE.
-  FetchContent_Declare(
-    tbb
-    URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz
-        OVERRIDE_FIND_PACKAGE)
-else()
-  FetchContent_Declare(
-    tbb
+set(tbb_fetch_content_args
     URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
+if(${CMAKE_VERSION} GREATER_EQUAL 3.28)
+  list(APPEND tbb_fetch_content_args SYSTEM EXCLUDE_FROM_ALL
+       OVERRIDE_FIND_PACKAGE)
 endif()
 
-if(NOT tbb_POPULATED)
-  FetchContent_Populate(tbb)
-  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM
-                     EXCLUDE_FROM_ALL)
-  else()
-    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
-    # compiler will # consider this 3rdparty headers as source code and fail due
-    # the -Werror flag.
-    add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
-    get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
-    set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                         "${tbb_include_dirs}")
-    if(${CMAKE_VERSION} LESS 3.24)
-      # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24
-      file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
+FetchContent_Declare(tbb ${tbb_fetch_content_args})
 
-      # dummy an empty config file. we add_subdirectory above anyways
-      file(WRITE "${CMAKE_BINARY_DIR}/fpRedirects/tbb-config.cmake" "")
-
-      # dummy a version file. same is done by OVERRIDE_FIND_PACKAGE by default
-      file(
-        WRITE "${CMAKE_BINARY_DIR}/fpRedirects/tbb-config-version.cmake"
-        "set(PACKAGE_VERSION_COMPATIBLE TRUE)
-      set(PACKAGE_VERSION_EXACT TRUE)
-      ")
-      # set the package dir for find_package calls downstream
-      set(TBB_DIR "${CMAKE_BINARY_DIR}/fpRedirects")
-      # prefer configs over module searches when find_packaging because of the
-      # redirection
-      set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+if(${CMAKE_VERSION} GREATER_EQUAL 3.28)
+  FetchContent_MakeAvailable(tbb)
+else()
+  # we cannot use MakeAvailable because EXCLUDE_FROM_ALL in Declare is 3.28
+  if(NOT tbb_POPULATED)
+    FetchContent_Populate(tbb)
+    if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+      add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM
+                       EXCLUDE_FROM_ALL)
+    else()
+      # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
+      # compiler will consider this 3rdparty headers as source code and fail due
+      # the -Werror flag.
+      add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
+      get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
+      set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                                           "${tbb_include_dirs}")
     endif()
+    # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
+
+    # dummy an empty config file. we add_subdirectory above anyways
+    file(WRITE "${CMAKE_BINARY_DIR}/fpRedirects/FindTBB.cmake" "")
+
+    # modify cmake module path only if it already doesnt have the directory
+    list(FIND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/fpRedirects" _index)
+    if(${_index} EQUAL -1)
+      list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/fpRedirects")
+    endif()
+    message(STATUS "CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
   endif()
 endif()
