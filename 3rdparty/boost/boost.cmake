@@ -1,6 +1,7 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Luca Lobefaro, Meher Malladi, Ignacio Vizzo, Cyrill
+# Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +21,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+function(set_target_system_include_dirs TARGET_NAME)
+  get_target_property(interface_include_dirs ${TARGET_NAME}
+                      INTERFACE_INCLUDE_DIRECTORIES)
+  set_target_properties(
+    ${TARGET_NAME} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                              "${interface_include_dirs}")
+endfunction()
+
 set(BOOST_INCLUDE_LIBRARIES iostreams regex)
 set(BUILD_SHARED_LIBS OFF)
 
 include(FetchContent)
-FetchContent_Declare(boost URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz)
+FetchContent_Declare(
+  boost
+  URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz
+)
 if(NOT boost_POPULATED)
   FetchContent_Populate(boost)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM
+                     EXCLUDE_FROM_ALL)
   else()
-    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
-    # consider this 3rdparty headers as source code and fail due the -Werror flag.
+    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
+    # compiler will consider this 3rdparty headers as source code and fail due
+    # the -Werror flag.
     add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} EXCLUDE_FROM_ALL)
-    get_target_property(boost_include_dirs boost INTERFACE_INCLUDE_DIRECTORIES)
-    set_target_properties(boost PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${boost_include_dirs}")
+    set_target_system_include_dirs(boost_iostreams)
+    set_target_system_include_dirs(boost_regex)
   endif()
-endif()
-
-if(TARGET Boosts::iostreams)
-  message(FATAL_ERROR "Boosts exists")
-else()
-  message(FATAL_ERROR "Boosadicke")
 endif()
