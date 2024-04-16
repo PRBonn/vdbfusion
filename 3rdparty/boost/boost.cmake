@@ -20,52 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# set(BOOST_ENABLE_CMAKE ON)
+set(BOOST_INCLUDE_LIBRARIES iostreams regex)
+set(BUILD_SHARED_LIBS OFF)
 
-# include(FetchContent)
-# FetchContent_Declare(boost URL https://github.com/boostorg/boost/archive/refs/tags/boost-1.71.0.tar.gz)
-# if(NOT boost_POPULATED)
-#   FetchContent_Populate(boost)
-#   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-#     add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
-#   else()
-#     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
-#     # consider this 3rdparty headers as source code and fail due the -Werror flag.
-#     add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} EXCLUDE_FROM_ALL)
-#     get_target_property(boost_include_dirs boost INTERFACE_INCLUDE_DIRECTORIES)
-#     set_target_properties(boost PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${boost_include_dirs}")
-#   endif()
-# endif()
+include(FetchContent)
+FetchContent_Declare(boost URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz)
+if(NOT boost_POPULATED)
+  FetchContent_Populate(boost)
+  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+  else()
+    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the compiler will
+    # consider this 3rdparty headers as source code and fail due the -Werror flag.
+    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} EXCLUDE_FROM_ALL)
+    get_target_property(boost_include_dirs boost INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(boost PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${boost_include_dirs}")
+  endif()
+endif()
 
-set(BOOST_URL "https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.bz2")
-set(BOOST_URL_SHA256 "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee")
-set(BOOST_CONFIGURE <SOURCE_DIR>/bootstrap.sh --with-libraries=iostreams,regex)
-set(BOOST_INSTALL
-    <SOURCE_DIR>/b2
-    install
-    link=static
-    warnings=off
-    cxxflags=-fPIC
-    cflags=-fPIC
-    --prefix=<INSTALL_DIR>)
-
-include(ExternalProject)
-ExternalProject_Add(
-  external_boost
-  PREFIX boost
-  URL ${BOOST_URL}
-  URL_HASH SHA256=${BOOST_URL_SHA256}
-  BUILD_IN_SOURCE true
-  CONFIGURE_COMMAND "${BOOST_CONFIGURE}"
-  BUILD_COMMAND ""
-  INSTALL_COMMAND "${BOOST_INSTALL}")
-
-# Simulate importing Boost::iostreams for OpenVDBHelper target
-ExternalProject_Get_Property(external_boost INSTALL_DIR)
-set(BOOST_ROOT ${INSTALL_DIR} CACHE INTERNAL "Boost libraries Install directory")
-add_library(BoostIostreamsHelper INTERFACE)
-add_dependencies(BoostIostreamsHelper external_boost_iostreams)
-target_include_directories(BoostIostreamsHelper INTERFACE ${INSTALL_DIR}/include)
-target_link_directories(BoostIostreamsHelper INTERFACE ${INSTALL_DIR}/lib)
-target_link_libraries(BoostIostreamsHelper INTERFACE boost_iostreams.a)
-add_library(Boost::iostreams ALIAS BoostIostreamsHelper)
+if(TARGET Boosts::iostreams)
+  message(FATAL_ERROR "Boosts exists")
+else()
+  message(FATAL_ERROR "Boosadicke")
+endif()
