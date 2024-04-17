@@ -20,41 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# Silence timestamp warning in new versions of cmake
 if(CMAKE_VERSION VERSION_GREATER 3.24)
   cmake_policy(SET CMP0135 OLD)
 endif()
 
-if(USE_SYSTEM_EIGEN3)
-  find_package(Eigen3 QUIET NO_MODULE)
-endif()
-if(NOT USE_SYSTEM_EIGEN3 OR NOT EIGEN3_FOUND)
-  set(USE_SYSTEM_EIGEN3 OFF)
-  include(${CMAKE_CURRENT_LIST_DIR}/eigen/eigen.cmake)
-endif()
+function(find_external_dependecy PACKAGE_NAME TARGET_NAME INCLUDED_CMAKE_PATH FIND_PACKAGE_MODE)
+  string(TOUPPER ${PACKAGE_NAME} PACKAGE_NAME_UP)
+  set(USE_FROM_SYSTEM_OPTION "USE_SYSTEM_${PACKAGE_NAME_UP}")
+  if(${${USE_FROM_SYSTEM_OPTION}})
+    find_package(${PACKAGE_NAME} QUIET ${FIND_PACKAGE_MODE})
+  endif()
+  if(NOT ${${USE_FROM_SYSTEM_OPTION}} OR NOT TARGET ${TARGET_NAME})
+    set(${USE_FROM_SYSTEM_OPTION} OFF PARENT_SCOPE)
+    include(${INCLUDED_CMAKE_PATH})
+  endif()
+endfunction()
 
+find_external_dependecy("Eigen3" "Eigen3::Eigen" "${CMAKE_CURRENT_LIST_DIR}/eigen/eigen.cmake" NO_MODULE)
 if(BUILD_PYTHON_BINDINGS)
-  if(USE_SYSTEM_PYBIND11)
-    find_package(pybind11 QUIET)
-  endif()
-  if(NOT USE_SYSTEM_PYBIND11 OR NOT pybind11_FOUND)
-    set(USE_SYSTEM_PYBIND11 OFF)
-    include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)
-  endif()
+  find_external_dependecy("pybind11" "pybind11" "${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake" NO_MODULE)
 endif()
-
-if(USE_SYSTEM_OPENVDB)
-  # When OpenVDB is available on the system, we just go for the dynamic version of it
-  include(GNUInstallDirs)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/OpenVDB")
-  find_package(OpenVDB QUIET)
-  if(OpenVDB_FOUND AND OpenVDB_USES_BLOSC)
-    # We need to get these hidden dependencies (if available) to static link them inside our library
-    target_link_libraries(OpenVDB::openvdb INTERFACE Blosc::blosc)
-  endif()
-endif()
-# When not using a pre installed version of OpenVDB we assume that no dependencies are installed and
-# therefore build blos-c, tbb, and libboost from soruce
-if(NOT USE_SYSTEM_OPENVDB OR NOT OpenVDB_FOUND)
-  set(USE_SYSTEM_OPENVDB OFF)
-  include(${CMAKE_CURRENT_LIST_DIR}/OpenVDB/OpenVDB.cmake)
-endif()
+find_external_dependecy("OpenVDB" "OpenVDB::openvdb" "${CMAKE_CURRENT_LIST_DIR}/openvdb/openvdb.cmake" MODULE)
