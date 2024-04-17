@@ -20,11 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(EIGEN_BUILD_DOC OFF CACHE BOOL "Don't build Eigen docs")
-set(EIGEN_BUILD_TESTING OFF CACHE BOOL "Don't build Eigen tests")
-set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "Don't build Eigen pkg-config")
-set(EIGEN_BUILD_BLAS OFF CACHE BOOL "Don't build blas module")
-set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "Don't build lapack module")
+set(EIGEN_BUILD_DOC OFF CACHE BOOL "Build Eigen docs.")
+set(EIGEN_BUILD_TESTING OFF CACHE BOOL "Build Eigen tests.")
+set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "Build Eigen pkg-config.")
+set(EIGEN_BUILD_BLAS OFF CACHE BOOL "Build Blas module for Eigen.")
+set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "Build Lapack module for Eigen.")
 
 include(FetchContent)
 FetchContent_Declare(eigen URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2)

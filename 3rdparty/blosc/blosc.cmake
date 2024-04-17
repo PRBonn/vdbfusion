@@ -20,21 +20,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-set(BUILD_STATIC
-    ON
-    CACHE BOOL "BLOSC static build")
-set(BUILD_SHARED
-    OFF
-    CACHE BOOL "BLOSC static build")
-set(BUILD_TESTS
-    OFF
-    CACHE BOOL "BLOSC tests")
-set(BUILD_BENCHMARKS
-    OFF
-    CACHE BOOL "BLOSC benchmarks")
-set(PREFER_EXTERNAL_COMPLIBS
-    OFF
-    CACHE BOOL "BLOSC external_complibs")
+set(BUILD_STATIC ON CACHE BOOL "BLOSC built as static lib.")
+set(BUILD_SHARED OFF CACHE BOOL "BLOSC built as shared lib.")
+set(BUILD_TESTS OFF CACHE BOOL "BLOSC tests build.")
+set(BUILD_BENCHMARKS OFF CACHE BOOL "BLOSC build benchmark programs.")
+set(PREFER_EXTERNAL_COMPLIBS OFF CACHE BOOL "BLOSC prefers installed depenbdency instead of includes sources.")
 
 include(FetchContent)
 set(blosc_fetch_content_args
@@ -66,25 +56,24 @@ else()
         blosc_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                                 "${blosc_include_dirs}")
     endif()
-    # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24 OVERRIDE creates dummy
+    # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24. OVERRIDE creates dummy
     # config and config version files and then forces find_package to first
-    # check the dir which has these files instead here we create a dummy
+    # check the dir which has these files. Instead here we create a dummy
     # Find<package>.cmake file and modify CMAKE_MODULE_PATH since openvdb uses
-    # the basic call signature and prefers modules first. setting
-    # CMAKE_FIND_PACKAGE_PREFER_CONFIG ON was for some reason inconsistent. this
-    # is a bit simpler anyway. at least with this you dont have to set
-    # package_DIR extra
+    # the basic call signature and prefers modules first. Setting
+    # CMAKE_FIND_PACKAGE_PREFER_CONFIG ON was for some reason inconsistent. This
+    # is a bit simpler anyway. At least with this you dont have to set
+    # package_DIR extra.
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
 
-    # dummy an empty find file. we add_subdirectory above anyways
+    # Dummy an empty find file. We add_subdirectory above anyways
     file(WRITE "${CMAKE_BINARY_DIR}/fpRedirects/FindBlosc.cmake" "")
 
-    # modify cmake module path only if it already doesnt have the directory
+    # Modify cmake module path only if it already doesnt have the directory
     list(FIND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/fpRedirects" _index)
     if(${_index} EQUAL -1)
       list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/fpRedirects")
     endif()
-    message(STATUS "CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
   endif()
 endif()
 
