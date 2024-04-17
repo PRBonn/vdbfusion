@@ -59,14 +59,13 @@ else()
     # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
 
-    # dummy an empty config file. we add_subdirectory above anyways
+    # Dummy an empty config file. We add_subdirectory above anyways
     file(WRITE "${CMAKE_BINARY_DIR}/fpRedirects/FindTBB.cmake" "")
 
-    # modify cmake module path only if it already doesnt have the directory
+    # Modify cmake module path only if it already doesnt have the directory
     list(FIND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/fpRedirects" _index)
     if(${_index} EQUAL -1)
       list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/fpRedirects")
     endif()
-    message(STATUS "CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
   endif()
 endif()
