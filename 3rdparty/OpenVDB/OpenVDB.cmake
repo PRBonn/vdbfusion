@@ -31,9 +31,17 @@ set(OPENVDB_CORE_SHARED
 set(OPENVDB_CORE_STATIC
     ON
     CACHE BOOL "Static")
-set(OPENVDB_BUILD_PYTHON_MODULE
-    OFF
-    CACHE BOOL "Python module")
+
+if(BUILD_PYTHON_BINDINGS)
+  # openvdb handles installing the pybind to site_packages as pyopenvdb.so
+  set(OPENVDB_BUILD_PYTHON_MODULE
+      ON
+      CACHE BOOL "Python module")
+else()
+  set(OPENVDB_BUILD_PYTHON_MODULE
+      OFF
+      CACHE BOOL "Python module")
+endif()
 set(OPENVDB_USE_DELAYED_LOADING
     OFF
     CACHE BOOL "Delayed loading")

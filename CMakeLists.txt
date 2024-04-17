@@ -29,12 +29,12 @@ project(
 # Setup build options
 option(USE_CCACHE "Build using Ccache if found on the path" ON)
 option(USE_SYSTEM_EIGEN3 "Use system pre-installed eigen3" ON)
-option(USE_SYSTEM_OPENVDB "Use system pre-installed OpenVDB" ON)
+option(USE_SYSTEM_OPENVDB "Use system pre-installed OpenVDB" OFF)
 option(USE_SYSTEM_PYBIND11 "Use system pre-installed pybind11" ON)
 option(SILENCE_WARNINGS
        "To build manylinux packages only, disable on the global scope" OFF)
 option(BUILD_CXX_EXAMPLE "Build C++ examples" OFF)
-option(BUILD_PYTHON_BINDINGS "Build the python module" OFF)
+option(BUILD_PYTHON_BINDINGS "Build the python module" ON)
 
 mark_as_advanced(USE_CCACHE USE_SYSTEM_OPENVDB SILENCE_WARNINGS
                  BUILD_PYTHON_BINDINGS)
