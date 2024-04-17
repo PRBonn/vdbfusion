@@ -21,6 +21,9 @@
 # SOFTWARE.
 .PHONY: install docker cpp
 
+install:
+	pip3 -v install . && cp build/*/compile_commands.json build/
+
 cpp_ninja:
 	@cmake -G Ninja -B build .
 	@cmake --build build --config Release
@@ -28,9 +31,6 @@ cpp_ninja:
 cpp_make:
 	@cmake -B build .
 	@cmake --build build --config Release
-
-install:
-	pip3 -v install . && cp build/*/compile_commands.json build/
 
 uninstall:
 	pip3 -v uninstall vdbfusion
