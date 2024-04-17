@@ -29,7 +29,7 @@ function(set_target_system_include_dirs TARGET_NAME)
                               "${interface_include_dirs}")
 endfunction()
 
-set(BOOST_INCLUDE_LIBRARIES iostreams regex CACHE STRINGS "Boost libraries")
+set(BOOST_INCLUDE_LIBRARIES iostreams regex CACHE STRING "Boost libraries")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "BOOST Shared")
 
 include(FetchContent)

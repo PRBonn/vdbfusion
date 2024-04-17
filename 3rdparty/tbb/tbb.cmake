@@ -21,21 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(BUILD_SHARED_LIBS
-    OFF
-    CACHE BOOL "TBB Shared")
-set(TBBMALLOC_BUILD
-    OFF
-    CACHE BOOL "TBB Malloc")
-set(TBB_EXAMPLES
-    OFF
-    CACHE BOOL "TBB Examples")
-set(TBB_STRICT
-    OFF
-    CACHE BOOL "TBB Stric")
-set(TBB_TEST
-    OFF
-    CACHE BOOL "TBB Test")
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "TBB built as shared lib.")
+set(TBBMALLOC_BUILD OFF CACHE BOOL "TBB with scalable memory allocator target build.")
+set(TBB_EXAMPLES OFF CACHE BOOL "TBB enable examples.")
+set(TBB_STRICT OFF CACHE BOOL "TBB treats compiler warnings as errors.")
+set(TBB_TEST OFF CACHE BOOL "TBB enable testing.")
 
 include(FetchContent)
 set(tbb_fetch_content_args
@@ -65,6 +55,7 @@ else()
       set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                                            "${tbb_include_dirs}")
     endif()
+    
     # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
 
