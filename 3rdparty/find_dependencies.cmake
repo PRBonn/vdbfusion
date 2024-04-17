@@ -1,6 +1,6 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# # Copyright (c) 2022 Luca Lobefaro, Meher Malladi, Ignacio Vizzo, Cyrill Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
