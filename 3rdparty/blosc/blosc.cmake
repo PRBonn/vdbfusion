@@ -27,11 +27,9 @@ set(BUILD_BENCHMARKS OFF CACHE BOOL "BLOSC build benchmark programs.")
 set(PREFER_EXTERNAL_COMPLIBS OFF CACHE BOOL "BLOSC prefers installed depenbdency instead of includes sources.")
 
 include(FetchContent)
-set(blosc_fetch_content_args
-    URL https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.5.tar.gz)
+set(blosc_fetch_content_args URL https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.5.tar.gz)
 if(${CMAKE_VERSION} GREATER_EQUAL 3.28)
-  list(APPEND blosc_fetch_content_args SYSTEM EXCLUDE_FROM_ALL
-       OVERRIDE_FIND_PACKAGE)
+  list(APPEND blosc_fetch_content_args SYSTEM EXCLUDE_FROM_ALL OVERRIDE_FIND_PACKAGE)
 endif()
 
 FetchContent_Declare(blosc ${blosc_fetch_content_args})
@@ -44,18 +42,14 @@ else()
   if(NOT blosc_POPULATED)
     FetchContent_Populate(blosc)
     if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-      add_subdirectory(${blosc_SOURCE_DIR} ${blosc_BINARY_DIR} SYSTEM
-                       EXCLUDE_FROM_ALL)
+      add_subdirectory(${blosc_SOURCE_DIR} ${blosc_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
     else()
       # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
       # compiler will consider this 3rdparty headers as source code and fail due
       # the -Werror flag.
       add_subdirectory(${blosc_SOURCE_DIR} ${blosc_BINARY_DIR} EXCLUDE_FROM_ALL)
-      get_target_property(blosc_include_dirs blosc_static
-                          INTERFACE_INCLUDE_DIRECTORIES)
-      set_target_properties(
-        blosc_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                "${blosc_include_dirs}")
+      get_target_property(blosc_include_dirs blosc_static INTERFACE_INCLUDE_DIRECTORIES)
+      set_target_properties(blosc_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${blosc_include_dirs}")
     endif()
     # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24. OVERRIDE creates dummy
     # config and config version files and then forces find_package to first

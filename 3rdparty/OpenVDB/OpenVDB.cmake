@@ -43,10 +43,7 @@ set(USE_NANOVDB OFF CACHE BOOL "OpenVDB use nanovdb.")
 set(USE_ZLIB OFF CACHE BOOL "OpenVDB use ZLib.")
 
 include(FetchContent)
-FetchContent_Declare(
-  openvdb
-  URL https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v11.0.0.tar.gz
-)
+FetchContent_Declare(openvdb URL https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v11.0.0.tar.gz)
 FetchContent_GetProperties(openvdb)
 if(NOT openvdb_POPULATED)
   FetchContent_Populate(openvdb)
@@ -71,4 +68,3 @@ if(PYOPENVDB_SUPPORT_ENABLED)
     set_target_properties(pyopenvdb PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY}>)
   endif()
 endif()
-

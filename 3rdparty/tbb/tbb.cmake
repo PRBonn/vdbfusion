@@ -28,11 +28,9 @@ set(TBB_STRICT OFF CACHE BOOL "TBB treats compiler warnings as errors.")
 set(TBB_TEST OFF CACHE BOOL "TBB enable testing.")
 
 include(FetchContent)
-set(tbb_fetch_content_args
-    URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
+set(tbb_fetch_content_args URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.8.0.tar.gz)
 if(${CMAKE_VERSION} GREATER_EQUAL 3.28)
-  list(APPEND tbb_fetch_content_args SYSTEM EXCLUDE_FROM_ALL
-       OVERRIDE_FIND_PACKAGE)
+  list(APPEND tbb_fetch_content_args SYSTEM EXCLUDE_FROM_ALL OVERRIDE_FIND_PACKAGE)
 endif()
 
 FetchContent_Declare(tbb ${tbb_fetch_content_args})
@@ -45,18 +43,16 @@ else()
   if(NOT tbb_POPULATED)
     FetchContent_Populate(tbb)
     if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-      add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM
-                       EXCLUDE_FROM_ALL)
+      add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
     else()
       # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
       # compiler will consider this 3rdparty headers as source code and fail due
       # the -Werror flag.
       add_subdirectory(${tbb_SOURCE_DIR} ${tbb_BINARY_DIR} EXCLUDE_FROM_ALL)
       get_target_property(tbb_include_dirs tbb INTERFACE_INCLUDE_DIRECTORIES)
-      set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                           "${tbb_include_dirs}")
+      set_target_properties(tbb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tbb_include_dirs}")
     endif()
-    
+
     # Emulate the OVERRIDE_FIND_PACKAGE behaviour in 3.24
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/fpRedirects")
 

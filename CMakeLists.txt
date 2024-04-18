@@ -21,18 +21,14 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.10)
-project(
-  VDBFusion
-  VERSION 0.1.6
-  LANGUAGES CXX)
+project(VDBFusion VERSION 0.1.6 LANGUAGES CXX)
 
 # Setup build options
 option(USE_CCACHE "Build using Ccache if found on the path" ON)
 option(USE_SYSTEM_EIGEN3 "Use system pre-installed eigen3" ON)
 option(USE_SYSTEM_OPENVDB "Use system pre-installed OpenVDB" ON)
 option(USE_SYSTEM_PYBIND11 "Use system pre-installed pybind11" ON)
-option(SILENCE_WARNINGS
-       "To build manylinux packages only, disable on the global scope" OFF)
+option(SILENCE_WARNINGS "To build manylinux packages only, disable on the global scope" OFF)
 option(BUILD_CXX_EXAMPLE "Build C++ examples" OFF)
 option(BUILD_PYTHON_BINDINGS "Build the python module" ON)
 
@@ -42,14 +38,10 @@ else()
   set(PYOPENVDB_SUPPORT_ENABLED OFF)
 endif()
 
-mark_as_advanced(USE_CCACHE USE_SYSTEM_OPENVDB SILENCE_WARNINGS
-                 BUILD_PYTHON_BINDINGS)
+mark_as_advanced(USE_CCACHE USE_SYSTEM_OPENVDB SILENCE_WARNINGS BUILD_PYTHON_BINDINGS)
 
 if(SILENCE_WARNINGS)
-  message(
-    WARNING
-      "Disable all warnings for all targets in the build system, only for the CI/CD"
-  )
+  message(WARNING "Disable all warnings for all targets in the build system, only for the CI/CD")
   add_compile_options(-w)
 endif()
 

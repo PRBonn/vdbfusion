@@ -22,27 +22,21 @@
 # SOFTWARE.
 
 function(set_target_system_include_dirs TARGET_NAME)
-  get_target_property(interface_include_dirs ${TARGET_NAME}
-                      INTERFACE_INCLUDE_DIRECTORIES)
-  set_target_properties(
-    ${TARGET_NAME} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                              "${interface_include_dirs}")
+  get_target_property(interface_include_dirs ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
+  set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${interface_include_dirs}")
 endfunction()
 
 set(BOOST_INCLUDE_LIBRARIES iostreams regex CACHE STRING "Boost list of libraries to be configured.")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Boost built as shared lib.")
 
 include(FetchContent)
-FetchContent_Declare(
-  boost
-  URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz
-)
+FetchContent_Declare(boost
+                     URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz)
 FetchContent_GetProperties(boost)
 if(NOT boost_POPULATED)
   FetchContent_Populate(boost)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM
-                     EXCLUDE_FROM_ALL)
+    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
   else()
     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
     # compiler will consider this 3rdparty headers as source code and fail due
