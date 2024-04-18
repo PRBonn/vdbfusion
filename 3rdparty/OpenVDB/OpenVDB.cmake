@@ -23,7 +23,6 @@
 
 include(${CMAKE_CURRENT_LIST_DIR}/../tbb/tbb.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../blosc/blosc.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/../boost/boost.cmake)
 
 if(PYOPENVDB_SUPPORT_ENABLED)
   # openvdb handles installing the pybind to site_packages as pyopenvdb.so
@@ -33,7 +32,7 @@ else()
 endif()
 set(OPENVDB_CORE_SHARED OFF CACHE BOOL "OpenVDB shared lib.")
 set(OPENVDB_CORE_STATIC ON CACHE BOOL "OpenVDB static lib.")
-set(OPENVDB_USE_DELAYED_LOADING OFF CACHE BOOL "OpenVDB delayed loading.")
+set(OPENVDB_USE_DELAYED_LOADING OFF CACHE BOOL "OpenVDB delayed loading.") # Boost is no longer a dependency if this is OFF
 set(OPENVDB_CXX_STRICT OFF CACHE BOOL "OpenVDB CXX strict.")
 set(OPENVDB_BUILD_VDB_PRINT OFF CACHE BOOL "OpenVDB build VDB print.")
 set(OPENVDB_INSTALL_CMAKE_MODULES OFF CACHE BOOL "OpenVDB install cmake modules.")
