@@ -25,7 +25,9 @@ target_compile_options(vdbfusion_pybind PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(vdbfusion_pybind PRIVATE VDBFusion::vdbfusion)
 
 # Set the ouput directory for vdbfusion python lib
+message(FATAL_ERROR "${VDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY}")
 if(VDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY)
+    message(FATAL_ERROR "GIAMMY")
     # The generator-expression handle the multi-config generators case (see cmake documentation)
     set_target_properties(vdbfusion_pybind PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${VDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY}>)
 endif()

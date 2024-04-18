@@ -45,7 +45,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3i>);
 namespace py = pybind11;
 using namespace py::literals;
 
-// We check for PYOPENVDB_SUPPORT on python side now
+// We check for PYOPENVDB_SUPPORT_ENABLED on python side now
 
 namespace vdbfusion {
 

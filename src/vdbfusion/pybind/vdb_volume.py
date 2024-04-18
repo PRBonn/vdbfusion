@@ -100,7 +100,7 @@ class VDBVolume:
     ) -> None:
         if grid is not None:
             if not self.pyopenvdb_support_enabled:
-                raise NotImplementedError("Please compile with PYOPENVDB_SUPPORT_ENABLED")
+                raise NotImplementedError("Please compile with PYOPENVDB_SUPPORT")
             if weighting_function is not None:
                 return self._volume._integrate(grid, weighting_function)
             if weight is not None:

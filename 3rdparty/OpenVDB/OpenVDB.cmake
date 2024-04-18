@@ -25,7 +25,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tbb/tbb.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../blosc/blosc.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../boost/boost.cmake)
 
-if(BUILD_PYTHON_BINDINGS)
+if(PYOPENVDB_SUPPORT_ENABLED)
   # openvdb handles installing the pybind to site_packages as pyopenvdb.so
   set(OPENVDB_BUILD_PYTHON_MODULE ON CACHE BOOL "OpenVDB python module.")
 else()
@@ -66,7 +66,7 @@ endif()
 
 add_library(OpenVDB::openvdb ALIAS openvdb_static)
 
-if(BUILD_PYTHON_BINDINGS)
+if(PYOPENVDB_SUPPORT_ENABLED)
   if(PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY)
     set_target_properties(pyopenvdb PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY}>)
   endif()

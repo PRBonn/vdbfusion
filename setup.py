@@ -59,7 +59,6 @@ class CMakeBuild(build_ext):
         # EXAMPLE_VERSION_INFO shows you how to pass a value into the C++ code
         # from Python.
         cmake_args = [
-            f"-DBUILD_PYTHON_BINDINGS=ON",
             f"-DVDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY={vdbfusion_extdir}",
             f"-DPYOPENVDB_LIBRARY_OUTPUT_DIRECTORY={pyopenvdb_extdir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",

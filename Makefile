@@ -24,14 +24,6 @@
 install:
 	pip3 -v install . && cp build/*/compile_commands.json build/
 
-cpp_ninja:
-	@cmake -G Ninja -B build .
-	@cmake --build build
-
-cpp_make:
-	@cmake -B build .
-	@cmake --build build
-
 uninstall:
 	pip3 -v uninstall vdbfusion
 
