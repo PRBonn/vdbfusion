@@ -33,7 +33,7 @@ option(USE_SYSTEM_OPENVDB "Use system pre-installed OpenVDB" ON)
 option(USE_SYSTEM_PYBIND11 "Use system pre-installed pybind11" ON)
 option(SILENCE_WARNINGS "To build manylinux packages only, disable on the global scope" OFF)
 option(BUILD_CXX_EXAMPLE "Build C++ examples" OFF)
-option(BUILD_PYTHON_BINDINGS "Build the python module" OFF)
+option(BUILD_PYTHON_BINDINGS "Build the python module" ON)
 
 if(BUILD_PYTHON_BINDINGS) 
   set(PYOPENVDB_SUPPORT_ENABLED OFF)
