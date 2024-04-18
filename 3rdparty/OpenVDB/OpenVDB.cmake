@@ -25,16 +25,16 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tbb/tbb.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../blosc/blosc.cmake)
 
 if(PYOPENVDB_SUPPORT_ENABLED)
-  # openvdb handles installing the pybind to site_packages as pyopenvdb.so
-  set(OPENVDB_BUILD_PYTHON_MODULE ON CACHE BOOL "OpenVDB python module.")
+  set(OPENVDB_BUILD_PYTHON_MODULE ON CACHE BOOL "Build OpenVDB python module.")
 else()
-  set(OPENVDB_BUILD_PYTHON_MODULE OFF CACHE BOOL "OpenVDB python module.")
+  set(OPENVDB_BUILD_PYTHON_MODULE OFF CACHE BOOL "Build OpenVDB python module.")
 endif()
-set(OPENVDB_CORE_SHARED OFF CACHE BOOL "OpenVDB shared lib.")
-set(OPENVDB_CORE_STATIC ON CACHE BOOL "OpenVDB static lib.")
-set(OPENVDB_USE_DELAYED_LOADING OFF CACHE BOOL "OpenVDB delayed loading.") # Boost is no longer a dependency if this is OFF
+set(OPENVDB_CORE_SHARED OFF CACHE BOOL "Build OpenVDB shared lib.")
+set(OPENVDB_CORE_STATIC ON CACHE BOOL "Build OpenVDB static lib.")
+# Boost is no longer a dependency if DELAYED LOADING is OFF
+set(OPENVDB_USE_DELAYED_LOADING OFF CACHE BOOL "OpenVDB delayed loading.")
 set(OPENVDB_CXX_STRICT OFF CACHE BOOL "OpenVDB CXX strict.")
-set(OPENVDB_BUILD_VDB_PRINT OFF CACHE BOOL "OpenVDB build VDB print.")
+set(OPENVDB_BUILD_VDB_PRINT OFF CACHE BOOL "Build OpenVDB VDB print.")
 set(OPENVDB_INSTALL_CMAKE_MODULES OFF CACHE BOOL "OpenVDB install cmake modules.")
 set(USE_STATIC_DEPENDENCIES ON CACHE BOOL "OpenVDB use static deps.")
 set(USE_AX OFF CACHE BOOL "OpenVDB use AX.")
@@ -42,24 +42,28 @@ set(USE_NANOVDB OFF CACHE BOOL "OpenVDB use nanovdb.")
 set(USE_ZLIB OFF CACHE BOOL "OpenVDB use ZLib.")
 
 include(FetchContent)
-FetchContent_Declare(openvdb URL https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v11.0.0.tar.gz)
-FetchContent_GetProperties(openvdb)
-if(NOT openvdb_POPULATED)
-  FetchContent_Populate(openvdb)
-  if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    # We do not EXCLUDE_FROM_ALL because we only have the two targets that we need (openvdb_static and pyopenvdb)
-    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} SYSTEM)
-  else()
+set(openvdb_fetch_content_args URL
+                               https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v11.0.0.tar.gz)
+if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+  # We do not EXCLUDE_FROM_ALL because through the flags above we enable only the two targets that we need (openvdb_static and pyopenvdb)
+  list(APPEND openvdb_fetch_content_args SYSTEM)
+endif()
+FetchContent_Declare(openvdb ${openvdb_fetch_content_args})
+
+if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+  FetchContent_MakeAvailable(blosc)
+else()
+  FetchContent_GetProperties(openvdb)
+  if(NOT openvdb_POPULATED)
+    FetchContent_Populate(openvdb)
     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
     # compiler will consider this 3rdparty headers as source code and fail due
     # the -Werror flag.
-    # We do not EXCLUDE_FROM_ALL because we only have the two targets that we need (openvdb_static and pyopenvdb)
     add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR})
     get_target_property(openvdb_include_dirs openvdb_static INTERFACE_INCLUDE_DIRECTORIES)
     set_target_properties(openvdb_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${openvdb_include_dirs}")
   endif()
 endif()
-
 add_library(OpenVDB::openvdb ALIAS openvdb_static)
 
 if(PYOPENVDB_SUPPORT_ENABLED)
