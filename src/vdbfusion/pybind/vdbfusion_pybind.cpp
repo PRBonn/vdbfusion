@@ -25,7 +25,6 @@
 
 // pybind11
 #include <pybind11/eigen.h>
-#include <pybind11/embed.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
