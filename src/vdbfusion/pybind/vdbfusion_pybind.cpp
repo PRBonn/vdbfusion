@@ -36,10 +36,6 @@
 #include <memory>
 #include <vector>
 
-#ifdef PYOPENVDB_SUPPORT
-#include "pyopenvdb.h"
-#endif
-
 #include "stl_vector_eigen.h"
 #include "vdbfusion/VDBVolume.h"
 
@@ -48,6 +44,10 @@ PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3i>);
 
 namespace py = pybind11;
 using namespace py::literals;
+
+#ifdef PYOPENVDB_SUPPORT
+auto pyopenvdb = py::module_::import("pyopenvdb");
+#endif
 
 namespace vdbfusion {
 

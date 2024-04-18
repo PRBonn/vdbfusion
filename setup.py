@@ -36,11 +36,15 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
     def build_extension(self, ext):
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        vdbfusion_extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        pyopenvdb_extdir = os.path.dirname(os.path.dirname(vdbfusion_extdir))
 
         # required for auto-detection of auxiliary "native" libs
-        if not extdir.endswith(os.path.sep):
-            extdir += os.path.sep
+        if not vdbfusion_extdir.endswith(os.path.sep):
+            vdbfusion_extdir += os.path.sep
+
+        if not pyopenvdb_extdir.endswith(os.path.sep):
+            pyopenvdb_extdir += os.path.sep
 
         debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
@@ -54,7 +58,8 @@ class CMakeBuild(build_ext):
         # from Python.
         cmake_args = [
             f"-DBUILD_PYTHON_BINDINGS=ON",
-            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
+            f"-DVDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY={vdbfusion_extdir}",
+            f"-DPYOPENVDB_LIBRARY_OUTPUT_DIRECTORY={pyopenvdb_extdir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
         ]
@@ -70,7 +75,6 @@ class CMakeBuild(build_ext):
 
         # Multi-config generators have a different way to specify configs
         if not single_config:
-            cmake_args += [f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"]
             build_args += ["--config", cfg]
 
         # Set CMAKE_BUILD_PARALLEL_LEVEL to control the parallel build level across all generators.

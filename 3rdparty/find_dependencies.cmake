@@ -38,7 +38,20 @@ function(find_external_dependency PACKAGE_NAME TARGET_NAME INCLUDED_CMAKE_PATH F
 endfunction()
 
 find_external_dependency("Eigen3" "Eigen3::Eigen" "${CMAKE_CURRENT_LIST_DIR}/eigen/eigen.cmake" NO_MODULE)
+
 if(BUILD_PYTHON_BINDINGS)
   find_external_dependency("pybind11" "pybind11::pybind11" "${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake" NO_MODULE)
 endif()
+
+# If we want system OpenVDB we ensure that FindOpenVDB.cmake file is on the path
+if(USE_SYSTEM_OPENVDB)
+  # When OpenVDB is available on the system, we just go for the dynamic version of it
+  include(GNUInstallDirs)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/OpenVDB")
+endif()
 find_external_dependency("OpenVDB" "OpenVDB::openvdb" "${CMAKE_CURRENT_LIST_DIR}/OpenVDB/OpenVDB.cmake" MODULE)
+
+# We need to get these hidden dependencies (if available) to static link them inside our library
+if(USE_SYSTEM_OPENVDB AND OpenVDB_FOUND AND OpenVDB_USES_BLOSC)
+    target_link_libraries(OpenVDB::openvdb INTERFACE Blosc::blosc)
+endif()

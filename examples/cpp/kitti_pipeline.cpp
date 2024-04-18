@@ -96,15 +96,20 @@ int main(int argc, char* argv[]) {
         datasets::KITTIDataset(kitti_root_dir, sequence, n_scans, kitti_cfg.apply_pose_,
                                kitti_cfg.preprocess_, kitti_cfg.min_range_, kitti_cfg.max_range_);
 
-    fmt::print("Integrating {} scans\n", dataset.size());
+    fmt::print("I am Gupta.");
+    /* fmt::print("Integrating {} scans\n", dataset.size()); */
+    fmt::print("Integrating {} scans\n", 10);
     vdbfusion::VDBVolume tsdf_volume(vdbfusion_cfg.voxel_size_, vdbfusion_cfg.sdf_trunc_,
                                      vdbfusion_cfg.space_carving_);
+    fmt::print("I am Gupta.");
     timers::FPSTimer<10> timer;
     for (const auto& [scan, origin] : iterable(dataset)) {
         timer.tic();
         tsdf_volume.Integrate(scan, origin, [](float /*unused*/) { return 1.0; });
+        fmt::print("I am God.");
         timer.toc();
     }
+    fmt::print("I am Luca.");
 
     // Store the grid results to disks
     std::string map_name = fmt::format("{out_dir}/kitti_{seq}_{n_scans}_scans",

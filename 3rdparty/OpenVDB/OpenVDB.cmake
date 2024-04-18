@@ -50,15 +50,24 @@ FetchContent_Declare(
 if(NOT openvdb_POPULATED)
   FetchContent_Populate(openvdb)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+    # We do not EXCLUDE_FROM_ALL because we only have the two targets that we need (openvdb_static and pyopenvdb)
+    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} SYSTEM)
   else()
     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
     # compiler will consider this 3rdparty headers as source code and fail due
     # the -Werror flag.
-    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} EXCLUDE_FROM_ALL)
+    # We do not EXCLUDE_FROM_ALL because we only have the two targets that we need (openvdb_static and pyopenvdb)
+    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR})
     get_target_property(openvdb_include_dirs openvdb_static INTERFACE_INCLUDE_DIRECTORIES)
     set_target_properties(openvdb_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${openvdb_include_dirs}")
   endif()
 endif()
 
 add_library(OpenVDB::openvdb ALIAS openvdb_static)
+
+if(BUILD_PYTHON_BINDINGS)
+  if(PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY)
+    set_target_properties(pyopenvdb PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY}>)
+  endif()
+endif()
+

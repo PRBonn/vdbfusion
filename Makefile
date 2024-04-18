@@ -26,11 +26,11 @@ install:
 
 cpp_ninja:
 	@cmake -G Ninja -B build .
-	@cmake --build build --config Release
+	@cmake --build build
 
 cpp_make:
 	@cmake -B build .
-	@cmake --build build --config Release
+	@cmake --build build
 
 uninstall:
 	pip3 -v uninstall vdbfusion
