@@ -36,9 +36,9 @@ option(BUILD_CXX_EXAMPLE "Build C++ examples" OFF)
 option(BUILD_PYTHON_BINDINGS "Build the python module" ON)
 
 if(BUILD_PYTHON_BINDINGS) 
-  set(PYOPENVDB_SUPPORT_ENABLED OFF)
-else()
   set(PYOPENVDB_SUPPORT_ENABLED ON BOOL CACHE "Build OpenVDB with Python support")
+else()
+  set(PYOPENVDB_SUPPORT_ENABLED OFF BOOL CACHE "Build OpenVDB with Python support")
 endif()
 
 mark_as_advanced(USE_CCACHE USE_SYSTEM_OPENVDB SILENCE_WARNINGS
