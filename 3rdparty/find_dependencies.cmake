@@ -25,30 +25,20 @@ if(CMAKE_VERSION VERSION_GREATER 3.24)
   cmake_policy(SET CMP0135 OLD)
 endif()
 
-function(find_external_dependency PACKAGE_NAME TARGET_NAME INCLUDED_CMAKE_PATH
-         FIND_PACKAGE_MODE)
+function(find_external_dependency PACKAGE_NAME TARGET_NAME INCLUDED_CMAKE_PATH FIND_PACKAGE_MODE)
   string(TOUPPER ${PACKAGE_NAME} PACKAGE_NAME_UP)
   set(USE_FROM_SYSTEM_OPTION "USE_SYSTEM_${PACKAGE_NAME_UP}")
   if(${${USE_FROM_SYSTEM_OPTION}})
     find_package(${PACKAGE_NAME} QUIET ${FIND_PACKAGE_MODE})
   endif()
   if(NOT ${${USE_FROM_SYSTEM_OPTION}} OR NOT TARGET ${TARGET_NAME})
-    message(STATUS "Fetch contenting") # debug log. remove later
-    set(${USE_FROM_SYSTEM_OPTION}
-        OFF
-        PARENT_SCOPE)
+    set(${USE_FROM_SYSTEM_OPTION} OFF PARENT_SCOPE)
     include(${INCLUDED_CMAKE_PATH})
   endif()
 endfunction()
 
-find_external_dependency(
-  "Eigen3" "Eigen3::Eigen" "${CMAKE_CURRENT_LIST_DIR}/eigen/eigen.cmake"
-  NO_MODULE)
+find_external_dependency("Eigen3" "Eigen3::Eigen" "${CMAKE_CURRENT_LIST_DIR}/eigen/eigen.cmake" NO_MODULE)
 if(BUILD_PYTHON_BINDINGS)
-  find_external_dependency(
-    "pybind11" "pybind11::headers"
-    "${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake" NO_MODULE)
+  find_external_dependency("pybind11" "pybind11::pybind11" "${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake" NO_MODULE)
 endif()
-find_external_dependency(
-  "OpenVDB" "OpenVDB::openvdb"
-  "${CMAKE_CURRENT_LIST_DIR}/OpenVDB/OpenVDB.cmake" MODULE)
+find_external_dependency("OpenVDB" "OpenVDB::openvdb" "${CMAKE_CURRENT_LIST_DIR}/OpenVDB/OpenVDB.cmake" MODULE)

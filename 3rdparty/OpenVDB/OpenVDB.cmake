@@ -25,47 +25,22 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tbb/tbb.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../blosc/blosc.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../boost/boost.cmake)
 
-set(OPENVDB_CORE_SHARED
-    OFF
-    CACHE BOOL "Shared")
-set(OPENVDB_CORE_STATIC
-    ON
-    CACHE BOOL "Static")
-
 if(BUILD_PYTHON_BINDINGS)
   # openvdb handles installing the pybind to site_packages as pyopenvdb.so
-  set(OPENVDB_BUILD_PYTHON_MODULE
-      ON
-      CACHE BOOL "Python module")
+  set(OPENVDB_BUILD_PYTHON_MODULE ON CACHE BOOL "OpenVDB python module.")
 else()
-  set(OPENVDB_BUILD_PYTHON_MODULE
-      OFF
-      CACHE BOOL "Python module")
+  set(OPENVDB_BUILD_PYTHON_MODULE OFF CACHE BOOL "OpenVDB python module.")
 endif()
-set(OPENVDB_USE_DELAYED_LOADING
-    OFF
-    CACHE BOOL "Delayed loading")
-set(OPENVDB_CXX_STRICT
-    OFF
-    CACHE BOOL "CSS strict")
-set(OPENVDB_BUILD_VDB_PRINT
-    OFF
-    CACHE BOOL "OPENVDB Print")
-set(OPENVDB_INSTALL_CMAKE_MODULES
-    OFF
-    CACHE BOOL "cmake modules")
-set(USE_STATIC_DEPENDENCIES
-    ON
-    CACHE BOOL "OPENVDB Static deps")
-set(USE_AX
-    OFF
-    CACHE BOOL "OPENVDB Use AX")
-set(USE_NANOVDB
-    OFF
-    CACHE BOOL "OPENVDB Use nanovdb")
-set(USE_ZLIB
-    OFF
-    CACHE BOOL "OPENVDB Use ZLib")
+set(OPENVDB_CORE_SHARED OFF CACHE BOOL "OpenVDB shared lib.")
+set(OPENVDB_CORE_STATIC ON CACHE BOOL "OpenVDB static lib.")
+set(OPENVDB_USE_DELAYED_LOADING OFF CACHE BOOL "OpenVDB delayed loading.")
+set(OPENVDB_CXX_STRICT OFF CACHE BOOL "OpenVDB CXX strict.")
+set(OPENVDB_BUILD_VDB_PRINT OFF CACHE BOOL "OpenVDB build VDB print.")
+set(OPENVDB_INSTALL_CMAKE_MODULES OFF CACHE BOOL "OpenVDB install cmake modules.")
+set(USE_STATIC_DEPENDENCIES ON CACHE BOOL "OpenVDB use static deps.")
+set(USE_AX OFF CACHE BOOL "OpenVDB use AX.")
+set(USE_NANOVDB OFF CACHE BOOL "OpenVDB use nanovdb.")
+set(USE_ZLIB OFF CACHE BOOL "OpenVDB use ZLib.")
 
 include(FetchContent)
 FetchContent_Declare(
@@ -75,19 +50,14 @@ FetchContent_Declare(
 if(NOT openvdb_POPULATED)
   FetchContent_Populate(openvdb)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} SYSTEM
-                     EXCLUDE_FROM_ALL)
+    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
   else()
     # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
     # compiler will consider this 3rdparty headers as source code and fail due
     # the -Werror flag.
-    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR}
-                     EXCLUDE_FROM_ALL)
-    get_target_property(openvdb_include_dirs openvdb_static
-                        INTERFACE_INCLUDE_DIRECTORIES)
-    set_target_properties(
-      openvdb_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                "${openvdb_include_dirs}")
+    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} EXCLUDE_FROM_ALL)
+    get_target_property(openvdb_include_dirs openvdb_static INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(openvdb_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${openvdb_include_dirs}")
   endif()
 endif()
 
