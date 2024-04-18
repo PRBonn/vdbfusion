@@ -25,12 +25,12 @@
 
 // pybind11
 #include <pybind11/eigen.h>
+#include <pybind11/embed.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-
 // std stuff
 #include <Eigen/Core>
 #include <memory>
@@ -44,10 +44,6 @@ PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3i>);
 
 namespace py = pybind11;
 using namespace py::literals;
-
-#ifdef PYOPENVDB_SUPPORT
-auto pyopenvdb = py::module_::import("pyopenvdb");
-#endif
 
 namespace vdbfusion {
 

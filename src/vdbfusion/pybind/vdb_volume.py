@@ -24,6 +24,7 @@ from typing import Any, Optional, Tuple, Callable, overload
 
 import numpy as np
 
+import pyopenvdb
 from . import vdbfusion_pybind
 
 

@@ -31,10 +31,10 @@ execute_process(COMMAND
                 OUTPUT_VARIABLE PYOPENVDB_SUPPORT
                 ERROR_QUIET)
 # if(PYOPENVDB_SUPPORT)
-set(PYOPENVDB_SUPPORT ON CACHE BOOL "KAKKENNNNN")
-  find_package(Boost COMPONENTS python REQUIRED)
+  set(PYOPENVDB_SUPPORT ON CACHE BOOL "KAKKENNNNN")
+  # find_package(Boost COMPONENTS python REQUIRED)
   target_compile_definitions(vdbfusion_pybind PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:PYOPENVDB_SUPPORT>")
-  target_link_libraries(vdbfusion_pybind PRIVATE Boost::python)
+  # target_link_libraries(vdbfusion_pybind PRIVATE Boost::python)
   message(STATUS "PYOPENVDB_SUPPORT enabled")
 # endif()
 
