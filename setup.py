@@ -1,6 +1,6 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,8 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
     def build_extension(self, ext):
+        # We set two individual variables instead of the global one
+        # to decide where to save python libraries
         vdbfusion_extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         pyopenvdb_extdir = os.path.dirname(os.path.dirname(vdbfusion_extdir))
 

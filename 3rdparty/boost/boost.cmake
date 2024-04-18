@@ -37,6 +37,7 @@ FetchContent_Declare(
   boost
   URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz
 )
+FetchContent_GetProperties(boost)
 if(NOT boost_POPULATED)
   FetchContent_Populate(boost)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)

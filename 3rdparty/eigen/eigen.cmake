@@ -28,6 +28,7 @@ set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "Build Lapack module for Eigen.")
 
 include(FetchContent)
 FetchContent_Declare(eigen URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2)
+FetchContent_GetProperties(eigen)
 if(NOT eigen_POPULATED)
   FetchContent_Populate(eigen)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)

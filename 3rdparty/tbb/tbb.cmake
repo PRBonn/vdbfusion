@@ -41,6 +41,7 @@ if(${CMAKE_VERSION} GREATER_EQUAL 3.28)
   FetchContent_MakeAvailable(tbb)
 else()
   # we cannot use MakeAvailable because EXCLUDE_FROM_ALL in Declare is 3.28
+  FetchContent_GetProperties(tbb)
   if(NOT tbb_POPULATED)
     FetchContent_Populate(tbb)
     if(${CMAKE_VERSION} GREATER_EQUAL 3.25)

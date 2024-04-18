@@ -45,6 +45,8 @@ PYBIND11_MAKE_OPAQUE(std::vector<Eigen::Vector3i>);
 namespace py = pybind11;
 using namespace py::literals;
 
+// We check for PYOPENVDB_SUPPORT on python side now
+
 namespace vdbfusion {
 
 PYBIND11_MODULE(vdbfusion_pybind, m) {
@@ -101,7 +103,6 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
                 self.Integrate(points, extrinsics, [=](float /*sdf*/) { return weight; });
             },
             "points"_a, "origin"_a, "weight"_a)
-#ifdef PYOPENVDB_SUPPORT
         .def("_integrate",
              py::overload_cast<openvdb::FloatGrid::Ptr, const std::function<float(float)>&>(
                  &VDBVolume::Integrate),
@@ -118,7 +119,6 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
                 self.Integrate(grid, [=](float /*sdf*/) { return weight; });
             },
             "grid"_a, "weight"_a)
-#endif
         .def(
             "_update_tsdf",
             [](VDBVolume& self, const float& sdf, std::vector<int>& ijk,
@@ -142,14 +142,9 @@ PYBIND11_MODULE(vdbfusion_pybind, m) {
                 openvdb::io::File(filename).write({self.tsdf_, self.weights_});
             },
             "filename"_a)
-#ifndef PYOPENVDB_SUPPORT
-        .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return false; })
-#else
-        .def_property_readonly_static("PYOPENVDB_SUPPORT_ENABLED", [](py::object) { return true; })
         .def("_prune", &VDBVolume::Prune, "min_weight"_a)
         .def_readwrite("_tsdf", &VDBVolume::tsdf_)
         .def_readwrite("_weights", &VDBVolume::weights_)
-#endif
         .def_readwrite("_voxel_size", &VDBVolume::voxel_size_)
         .def_readwrite("_sdf_trunc", &VDBVolume::sdf_trunc_)
         .def_readwrite("_space_carving", &VDBVolume::space_carving_);

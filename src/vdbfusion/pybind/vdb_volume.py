@@ -1,6 +1,6 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,14 @@
 from typing import Any, Optional, Tuple, Callable, overload
 
 import numpy as np
+import importlib
 
-import pyopenvdb
 from . import vdbfusion_pybind
-
+try:
+    pyopenvdb_lib = importlib.import_module("pyopenvdb")
+    PYOPENVDB_SUPPORT_ENABLED = True
+except ModuleNotFoundError:
+    PYOPENVDB_SUPPORT_ENABLED = False
 
 class VDBVolume:
     def __init__(
@@ -44,7 +48,7 @@ class VDBVolume:
         self.voxel_size = self._volume._voxel_size
         self.sdf_trunc = self._volume._sdf_trunc
         self.space_carving = self._volume._space_carving
-        self.pyopenvdb_support_enabled = self._volume.PYOPENVDB_SUPPORT_ENABLED
+        self.pyopenvdb_support_enabled = PYOPENVDB_SUPPORT_ENABLED
         if self.pyopenvdb_support_enabled:
             self.tsdf = self._volume._tsdf
             self.weights = self._volume._weights

@@ -40,6 +40,7 @@ if(${CMAKE_VERSION} GREATER_EQUAL 3.28)
   FetchContent_MakeAvailable(blosc)
 else()
   # we cannot use MakeAvailable because EXCLUDE_FROM_ALL in Declare is 3.28
+  FetchContent_GetProperties(blosc)
   if(NOT blosc_POPULATED)
     FetchContent_Populate(blosc)
     if(${CMAKE_VERSION} GREATER_EQUAL 3.25)

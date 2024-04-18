@@ -47,6 +47,7 @@ FetchContent_Declare(
   openvdb
   URL https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v11.0.0.tar.gz
 )
+FetchContent_GetProperties(openvdb)
 if(NOT openvdb_POPULATED)
   FetchContent_Populate(openvdb)
   if(${CMAKE_VERSION} GREATER_EQUAL 3.25)

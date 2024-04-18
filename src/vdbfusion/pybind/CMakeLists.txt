@@ -1,6 +1,6 @@
 # MIT License
 #
-# # Copyright (c) 2022 Ignacio Vizzo, Cyrill Stachniss, University of Bonn
+# Copyright (c) 2022 Meher Malladi, Luca Lobefaro, Ignacio Vizzo, Cyrill Stachniss, University of Bonn
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,9 @@ pybind11_add_module(vdbfusion_pybind vdbfusion_pybind.cpp)
 target_compile_options(vdbfusion_pybind PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(vdbfusion_pybind PRIVATE VDBFusion::vdbfusion)
 
-# PYOPENVDB_SUPPORT is defined only by the existence of the pyopenvdb library.
-find_package(Python COMPONENTS Interpreter)
-execute_process(COMMAND
-                ${PYTHON_EXECUTABLE} "-c" "import pyopenvdb; print(True)"
-                OUTPUT_VARIABLE PYOPENVDB_SUPPORT
-                ERROR_QUIET)
-# if(PYOPENVDB_SUPPORT)
-  set(PYOPENVDB_SUPPORT ON CACHE BOOL "KAKKENNNNN")
-  # find_package(Boost COMPONENTS python REQUIRED)
-  target_compile_definitions(vdbfusion_pybind PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:PYOPENVDB_SUPPORT>")
-  # target_link_libraries(vdbfusion_pybind PRIVATE Boost::python)
-  message(STATUS "PYOPENVDB_SUPPORT enabled")
-# endif()
-
-# Set the ouput directory for vdbfusion lib
+# Set the ouput directory for vdbfusion python lib
 if(VDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY)
+    # The generator-expression handle the multi-config generators case (see cmake documentation)
     set_target_properties(vdbfusion_pybind PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${VDBFUSION_PYBIND_LIBRARY_OUTPUT_DIRECTORY}>)
 endif()
 
