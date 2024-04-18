@@ -108,7 +108,7 @@ class VDBFusionPipeline:
     def _print_metrics(self):
         # If PYOPENVDB_SUPPORT_ENABLED has not been enabled then we can't report any metrics
         if not self._tsdf_volume.pyopenvdb_support_enabled:
-            print("No metrics available, please compile with PYOPENVDB_SUPPORT_ENABLED")
+            print("No metrics available, please compile OpenVDB with python bindings.")
             return
 
         # Compute the dimensions of the volume mapped
