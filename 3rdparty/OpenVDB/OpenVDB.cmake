@@ -51,7 +51,7 @@ endif()
 FetchContent_Declare(openvdb ${openvdb_fetch_content_args})
 
 if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-  FetchContent_MakeAvailable(blosc)
+  FetchContent_MakeAvailable(openvdb)
 else()
   FetchContent_GetProperties(openvdb)
   if(NOT openvdb_POPULATED)
