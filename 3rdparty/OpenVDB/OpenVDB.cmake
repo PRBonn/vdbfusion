@@ -40,13 +40,14 @@ set(USE_STATIC_DEPENDENCIES ON CACHE BOOL "OpenVDB use static deps.")
 set(USE_AX OFF CACHE BOOL "OpenVDB use AX.")
 set(USE_NANOVDB OFF CACHE BOOL "OpenVDB use nanovdb.")
 set(USE_ZLIB OFF CACHE BOOL "OpenVDB use ZLib.")
+set(OPENVDB_ENABLE_UNINSTALL OFF CACHE BOOL "OpenVDB disable Uninstall.cmake call.")
 
 include(FetchContent)
 set(openvdb_fetch_content_args URL
                                https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v11.0.0.tar.gz)
 if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
-  # We do not EXCLUDE_FROM_ALL because through the flags above we enable only the two targets that we need (openvdb_static and pyopenvdb)
-  list(APPEND openvdb_fetch_content_args SYSTEM)
+  # EXCLUDE_FROM_ALL might be needed for avoiding installing openvdb stuff
+  list(APPEND openvdb_fetch_content_args SYSTEM EXCLUDE_FROM_ALL)
 endif()
 FetchContent_Declare(openvdb ${openvdb_fetch_content_args})
 
@@ -56,17 +57,23 @@ else()
   FetchContent_GetProperties(openvdb)
   if(NOT openvdb_POPULATED)
     FetchContent_Populate(openvdb)
-    # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
-    # compiler will consider this 3rdparty headers as source code and fail due
-    # the -Werror flag.
-    add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR})
-    get_target_property(openvdb_include_dirs openvdb_static INTERFACE_INCLUDE_DIRECTORIES)
-    set_target_properties(openvdb_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${openvdb_include_dirs}")
+    if(${CMAKE_VERSION} GREATER_EQUAL 3.25)
+      add_subdirectory(${openvdb_SOURCE_DIR} ${blosc_BINARY_DIR} SYSTEM EXCLUDE_FROM_ALL)
+    else()
+      # Emulate the SYSTEM flag introduced in CMake 3.25. Withouth this flag the
+      # compiler will consider this 3rdparty headers as source code and fail due
+      # the -Werror flag.
+      add_subdirectory(${openvdb_SOURCE_DIR} ${openvdb_BINARY_DIR} EXCLUDE_FROM_ALL)
+      get_target_property(openvdb_include_dirs openvdb_static INTERFACE_INCLUDE_DIRECTORIES)
+      set_target_properties(openvdb_static PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${openvdb_include_dirs}")
+    endif()
   endif()
 endif()
 add_library(OpenVDB::openvdb ALIAS openvdb_static)
 
 if(PYOPENVDB_SUPPORT_ENABLED)
+  add_custom_target(build_pyopenvdb ALL COMMENT "Building pyopenvdb")
+  add_dependencies(build_pyopenvdb pyopenvdb)
   if(PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY)
     set_target_properties(pyopenvdb PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${PYOPENVDB_LIBRARY_OUTPUT_DIRECTORY}>)
   endif()
