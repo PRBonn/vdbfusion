@@ -53,7 +53,10 @@ if(USE_SYSTEM_OPENVDB)
   # When OpenVDB is available on the system, we just go for the dynamic version of it
   include(GNUInstallDirs)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/OpenVDB")
-  find_package(OpenVDB QUIET)
+  find_package(openvdb_vendor QUIET)
+  if(NOT OpenVDB_FOUND)
+    find_package(OpenVDB QUIET)
+  endif()
   if(OpenVDB_FOUND AND OpenVDB_USES_BLOSC)
     # We need to get these hidden dependencies (if available) to static link them inside our library
     target_link_libraries(OpenVDB::openvdb INTERFACE Blosc::blosc)
